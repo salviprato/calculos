@@ -10,6 +10,7 @@
             --primary: #3498db;
             --success: #2ecc71;
             --warning: #f39c12;
+            --danger: #e74c3c;
             --dark: #2c3e50;
             --bg: #f4f7f6;
             --border: #ddd;
@@ -56,11 +57,7 @@
             padding: 20px;
             border-top: 1px solid var(--border);
         }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
         .section {
             background: #fff;
@@ -70,84 +67,53 @@
             margin-bottom: 20px;
         }
         
-        .form-horizontal {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-end;
-        }
-        .form-horizontal .form-group {
-            flex: 1;
-            min-width: 150px;
-            margin-bottom: 0;
-        }
-        .form-horizontal button {
-            width: auto;
-            padding: 10px 25px;
-        }
+        .form-horizontal { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .form-horizontal .form-group { flex: 1; min-width: 150px; margin-bottom: 0; }
+        .form-horizontal button { width: auto; padding: 10px 25px; }
 
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #555; }
         input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-family: inherit;
+            width: 100%; padding: 10px; border: 1px solid #ccc;
+            border-radius: 5px; box-sizing: border-box; font-family: inherit;
         }
         
-        .moneda-symbol {
-            position: absolute;
-            left: 10px;
-            top: 33px;
-            font-weight: bold;
-            color: #7f8c8d;
-        }
+        .moneda-symbol { position: absolute; left: 10px; top: 33px; font-weight: bold; color: #7f8c8d; }
         .input-moneda { padding-left: 25px; }
         
         button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
+            background-color: var(--primary); color: white; border: none;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
+            font-weight: bold; transition: background 0.3s;
         }
-        button:hover { background-color: #2980b9; }
+        button:hover { filter: brightness(0.9); }
         .btn-success { background-color: var(--success); }
-        .btn-success:hover { background-color: #27ae60; }
         .btn-warning { background-color: var(--warning); padding: 5px 10px; font-size: 0.8em;}
-        .btn-warning:hover { background-color: #d68910; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background-color: var(--primary); color: white; }
         
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
         th { background-color: #f8f9fa; color: var(--dark); }
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; color: white; }
+        .bg-activa { background-color: var(--success); }
+        .bg-terminada { background-color: #7f8c8d; }
         .bg-materiales { background-color: #e67e22; }
         .bg-mano-obra { background-color: #9b59b6; }
         .bg-extras { background-color: #95a5a6; }
         
         #panel-gastos { display: none; }
         .grafico-container { position: relative; height: 300px; width: 100%; }
+        .cotizacion-info { font-size: 0.75em; color: #7f8c8d; margin-top: 4px; display: block; }
+        .controles-tabla { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         
-        .cotizacion-info {
-            font-size: 0.75em;
-            color: #7f8c8d;
-            margin-top: 4px;
-            display: block;
+        .header-obra {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;
+            flex-wrap: wrap; gap: 10px;
         }
-        
-        .controles-tabla {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .etiqueta-estado { font-size: 0.5em; vertical-align: middle; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -155,8 +121,8 @@
 <div class="container">
     <h1>Panel de Control de Obras</h1>
 
-    <details open>
-        <summary>Gestión de Obras (Crear y Seleccionar)</summary>
+    <details open id="acordeon-activas">
+        <summary>Obras Activas (Crear y Seleccionar)</summary>
         <div class="accordion-content grid-2">
             <div>
                 <label for="nombre-obra">Nueva Obra</label>
@@ -166,7 +132,7 @@
                 </div>
             </div>
             <div>
-                <label for="select-obra">Seleccionar Obra Existente</label>
+                <label for="select-obra">Seleccionar Obra en Curso</label>
                 <select id="select-obra">
                     <option value="">-- Seleccioná una obra --</option>
                 </select>
@@ -174,12 +140,39 @@
         </div>
     </details>
 
-    <div id="panel-gastos">
-        <h2 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">
-            Administrando: <span id="titulo-obra-activa" style="color: var(--primary);"></span>
-        </h2>
+    <details id="acordeon-historial">
+        <summary>Historial de Obras Terminadas</summary>
+        <div class="accordion-content">
+            <div style="overflow-x: auto;">
+                <table id="tabla-obras-terminadas">
+                    <thead>
+                        <tr>
+                            <th>Nombre de la Obra</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-obras-terminadas">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </details>
 
-        <div class="section">
+    <div id="panel-gastos">
+        <div class="header-obra">
+            <h2 style="margin: 0;">
+                <span id="titulo-obra-activa" style="color: var(--primary);"></span>
+                <span id="badge-estado-obra" class="badge bg-activa etiqueta-estado">ACTIVA</span>
+            </h2>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-restaurar-obra" class="btn-outline" style="display: none;">Restaurar Obra</button>
+                <button id="btn-terminar-obra" class="btn-warning" style="font-size: 1em; padding: 10px 20px;">Terminar Obra</button>
+                <button id="btn-borrar-obra" class="btn-danger">Borrar Obra</button>
+            </div>
+        </div>
+
+        <div class="section" id="seccion-formulario-gastos">
             <form id="form-gasto" class="form-horizontal">
                 <input type="hidden" id="id-gasto-editando" value="">
                 
@@ -231,7 +224,6 @@
         </details>
 
         <div class="section" style="padding: 0; border: none; background: transparent;">
-            
             <div class="controles-tabla">
                 <h3 style="margin: 0;">Historial de Gastos</h3>
                 <div>
@@ -256,7 +248,7 @@
                             <th>Extra</th>
                             <th>ARS ($)</th>
                             <th>USD (U$D)</th>
-                            <th>Acciones</th>
+                            <th id="columna-acciones">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="lista-gastos">
@@ -273,7 +265,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { 
-        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, doc, updateDoc 
+        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, getDocs 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -289,12 +281,13 @@
     const db = getFirestore(app);
 
     let obraActivaId = null;
+    let datosObraActiva = null; // Guardamos los datos de la obra seleccionada
     let unsubscribeGastos = null;
     let chartInstance = null; 
-    let gastosActualesEnMemoria = []; // Guardamos los gastos para ordenarlos sin llamar a Firebase de nuevo
+    let gastosActualesEnMemoria = [];
+    let obrasMemoria = {}; // Para tener los datos de todas las obras a mano
 
-    // Variables Dólar
-    let tasaDolarOficial = 1000; // Valor por defecto por si falla la API
+    let tasaDolarOficial = 1000; 
 
     // Referencias DOM
     const selectObra = document.getElementById('select-obra');
@@ -308,8 +301,15 @@
     const btnSubmitGasto = document.getElementById('btn-submit-gasto');
     const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion');
     const inputIdEditando = document.getElementById('id-gasto-editando');
+    const listaObrasTerminadas = document.getElementById('lista-obras-terminadas');
+    const seccionFormularioGastos = document.getElementById('seccion-formulario-gastos');
+    const btnTerminarObra = document.getElementById('btn-terminar-obra');
+    const btnBorrarObra = document.getElementById('btn-borrar-obra');
+    const btnRestaurarObra = document.getElementById('btn-restaurar-obra');
+    const badgeEstadoObra = document.getElementById('badge-estado-obra');
+    const columnaAcciones = document.getElementById('columna-acciones');
 
-    // === INICIO: LÓGICA DE DÓLAR Y FORMATEO === //
+    // === LÓGICA DE DÓLAR Y FORMATEO ===
     async function obtenerCotizacionDolar() {
         try {
             const respuesta = await fetch('https://dolarapi.com/v1/dolares/oficial');
@@ -317,66 +317,79 @@
             tasaDolarOficial = data.venta;
             document.getElementById('info-cotizacion').textContent = `Cotización: $${tasaDolarOficial}`;
         } catch (error) {
-            console.error("Error cargando dólar", error);
             document.getElementById('info-cotizacion').textContent = `Cotización manual: $${tasaDolarOficial}`;
         }
     }
     obtenerCotizacionDolar();
 
-    function limpiarNumero(stringNum) {
-        if(!stringNum) return 0;
-        return parseFloat(stringNum.replace(/\./g, '').replace(',', '.')) || 0;
-    }
-
+    function limpiarNumero(stringNum) { return parseFloat(stringNum.replace(/\./g, '').replace(',', '.')) || 0; }
     function formatearConPuntos(num) {
         let partes = num.toFixed(2).replace('.', ',').split(',');
         partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         return partes.join(',');
     }
 
-    // Evento al escribir Pesos
     inputArs.addEventListener('input', function() {
-        // Formateo visual del input actual
         let val = this.value.replace(/[^\d,]/g, '');
         let partes = val.split(',');
         partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } 
-        else { this.value = partes[0]; }
-
-        // Calculo automático de USD
-        let ars = limpiarNumero(this.value);
-        let usd = ars / tasaDolarOficial;
-        inputUsd.value = formatearConPuntos(usd);
+        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } else { this.value = partes[0]; }
+        inputUsd.value = formatearConPuntos(limpiarNumero(this.value) / tasaDolarOficial);
     });
 
-    // Evento al escribir Dólares
     inputUsd.addEventListener('input', function() {
-        // Formateo visual del input actual
         let val = this.value.replace(/[^\d,]/g, '');
         let partes = val.split(',');
         partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } 
-        else { this.value = partes[0]; }
-
-        // Calculo automático de ARS
-        let usd = limpiarNumero(this.value);
-        let ars = usd * tasaDolarOficial;
-        inputArs.value = formatearConPuntos(ars);
+        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } else { this.value = partes[0]; }
+        inputArs.value = formatearConPuntos(limpiarNumero(this.value) * tasaDolarOficial);
     });
-    // === FIN LÓGICA DÓLAR === //
 
-    // 1. Escuchar Obras
+    // 1. Escuchar Obras (Activas y Terminadas)
     const qObras = query(collection(db, "obras"), orderBy("fechaCreacion", "desc"));
     onSnapshot(qObras, (snapshot) => {
-        const valorActual = selectObra.value;
+        const valorActualSelect = selectObra.value;
         selectObra.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
-        snapshot.forEach((doc) => {
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = doc.data().nombre;
-            selectObra.appendChild(option);
+        listaObrasTerminadas.innerHTML = '';
+        obrasMemoria = {}; // Limpiamos memoria
+
+        let hayTerminadas = false;
+
+        snapshot.forEach((docSnap) => {
+            const obra = docSnap.data();
+            const id = docSnap.id;
+            obrasMemoria[id] = obra;
+
+            // Por defecto, si no tiene estado, es activa
+            const estado = obra.estado || 'activa'; 
+
+            if (estado === 'activa') {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = obra.nombre;
+                selectObra.appendChild(option);
+            } else if (estado === 'terminada') {
+                hayTerminadas = true;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${obra.nombre}</strong></td>
+                    <td><span class="badge bg-terminada">Terminada</span></td>
+                    <td><button class="btn-outline" style="padding: 5px 10px;" onclick="window.cargarObraDesdeHistorial('${id}')">Ver Gastos</button></td>
+                `;
+                listaObrasTerminadas.appendChild(tr);
+            }
         });
-        if (valorActual) selectObra.value = valorActual;
+
+        if (!hayTerminadas) {
+            listaObrasTerminadas.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay obras terminadas.</td></tr>';
+        }
+
+        if (valorActualSelect && obrasMemoria[valorActualSelect]?.estado !== 'terminada') {
+            selectObra.value = valorActualSelect;
+        } else if (valorActualSelect) {
+            // Si la obra que estaba seleccionada acaba de ser terminada, la deseleccionamos del dropdown
+            selectObra.value = ""; 
+        }
     });
 
     // 2. Crear Obra
@@ -386,38 +399,121 @@
         try {
             const docRef = await addDoc(collection(db, "obras"), {
                 nombre: nombreInput.value.trim(),
+                estado: 'activa', // Nuevo campo
                 fechaCreacion: serverTimestamp()
             });
             nombreInput.value = '';
             selectObra.value = docRef.id;
             selectObra.dispatchEvent(new Event('change'));
-            document.querySelector('details').removeAttribute('open');
+            document.getElementById('acordeon-activas').removeAttribute('open');
         } catch (e) { console.error(e); }
     });
 
-    // 3. Seleccionar Obra
+    // 3. Seleccionar Obra (desde Select)
     selectObra.addEventListener('change', (e) => {
-        obraActivaId = e.target.value;
-        if (unsubscribeGastos) unsubscribeGastos();
-        
-        if (obraActivaId) {
-            tituloObraActiva.textContent = e.target.options[e.target.selectedIndex].text;
-            panelGastos.style.display = 'block';
-            resetearFormulario();
-            escucharGastos(obraActivaId);
+        const id = e.target.value;
+        if (id) {
+            cargarInterfazObra(id);
+            document.getElementById('acordeon-historial').removeAttribute('open');
         } else {
             panelGastos.style.display = 'none';
         }
     });
 
-    // 4. Escuchar Gastos de Firebase (Solo lectura, se guarda en memoria)
+    // Función global para abrir desde el historial
+    window.cargarObraDesdeHistorial = function(id) {
+        selectObra.value = ""; // Limpia el select de activas
+        cargarInterfazObra(id);
+        document.getElementById('acordeon-historial').removeAttribute('open');
+    };
+
+    // Función principal que prepara la UI según el estado de la obra
+    function cargarInterfazObra(id) {
+        obraActivaId = id;
+        datosObraActiva = obrasMemoria[id];
+        
+        if (unsubscribeGastos) unsubscribeGastos();
+        
+        tituloObraActiva.textContent = datosObraActiva.nombre;
+        panelGastos.style.display = 'block';
+        
+        // Ajustar la Interfaz según el estado (Activa vs Terminada)
+        if (datosObraActiva.estado === 'terminada') {
+            badgeEstadoObra.textContent = "TERMINADA";
+            badgeEstadoObra.className = "badge bg-terminada etiqueta-estado";
+            
+            seccionFormularioGastos.style.display = 'none'; // Oculta carga
+            columnaAcciones.style.display = 'none'; // Oculta columna Editar de tabla
+            
+            btnTerminarObra.style.display = 'none';
+            btnRestaurarObra.style.display = 'inline-block';
+        } else {
+            badgeEstadoObra.textContent = "ACTIVA";
+            badgeEstadoObra.className = "badge bg-activa etiqueta-estado";
+            
+            seccionFormularioGastos.style.display = 'block'; // Muestra carga
+            columnaAcciones.style.display = 'table-cell'; // Muestra columna
+            
+            btnTerminarObra.style.display = 'inline-block';
+            btnRestaurarObra.style.display = 'none';
+        }
+
+        resetearFormulario();
+        escucharGastos(obraActivaId);
+        
+        // Scrollear al panel
+        panelGastos.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- ACCIONES DE OBRA (TERMINAR, BORRAR, RESTAURAR) ---
+
+    btnTerminarObra.addEventListener('click', async () => {
+        if(confirm("¿Estás seguro de terminar esta obra? Pasará al historial y no se podrán cargar más gastos.")){
+            await updateDoc(doc(db, "obras", obraActivaId), { estado: 'terminada' });
+            cargarInterfazObra(obraActivaId); // Recarga la UI en modo lectura
+            document.getElementById('acordeon-historial').setAttribute('open', '');
+        }
+    });
+
+    btnRestaurarObra.addEventListener('click', async () => {
+        if(confirm("¿Querés volver a activar esta obra para cargarle más gastos?")){
+            await updateDoc(doc(db, "obras", obraActivaId), { estado: 'activa' });
+            selectObra.value = obraActivaId; // La vuelve a seleccionar en el desplegable
+            cargarInterfazObra(obraActivaId);
+        }
+    });
+
+    btnBorrarObra.addEventListener('click', async () => {
+        if(confirm("¡ATENCIÓN! Esto borrará la obra y TODOS sus gastos permanentemente. ¿Estás absolutamente seguro?")){
+            try {
+                // 1. Buscar y borrar todos los gastos asociados a la obra
+                const qBorrar = query(collection(db, "gastos"), where("obraId", "==", obraActivaId));
+                const snapshotBorrar = await getDocs(qBorrar);
+                snapshotBorrar.forEach(async (docGasto) => {
+                    await deleteDoc(docGasto.ref);
+                });
+
+                // 2. Borrar la obra en sí
+                await deleteDoc(doc(db, "obras", obraActivaId));
+                
+                panelGastos.style.display = 'none';
+                obraActivaId = null;
+                alert("Obra y gastos eliminados correctamente.");
+            } catch (error) {
+                console.error("Error al borrar:", error);
+                alert("Hubo un error al borrar la obra.");
+            }
+        }
+    });
+
+
+    // 4. Escuchar Gastos
     function escucharGastos(obraId) {
         const qGastos = query(collection(db, "gastos"), where("obraId", "==", obraId));
         unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
             gastosActualesEnMemoria = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                // Extraemos el tiempo real para ordenar. Si acaba de crearse, usamos Date.now()
                 tiempoReal: doc.data().timestamp ? doc.data().timestamp.toMillis() : Date.now() 
             }));
             renderizarTablaYGrafico();
@@ -435,9 +531,8 @@
         let totalArs = 0;
         let totalUsd = 0;
         listaGastos.innerHTML = '';
-        const gastosPorFecha = {}; // Para el gráfico
+        const gastosPorFecha = {}; 
 
-        // Copiamos y ORDENAMOS el array de memoria según el select
         const orden = selectOrden.value;
         let gastosOrdenados = [...gastosActualesEnMemoria].sort((a, b) => {
             if (orden === 'fecha_desc') return b.tiempoReal - a.tiempoReal;
@@ -448,18 +543,21 @@
             return 0;
         });
 
+        // Verificamos si la obra está terminada para saber si dibujar la columna de botones
+        const esTerminada = datosObraActiva && datosObraActiva.estado === 'terminada';
+
         if (gastosOrdenados.length === 0) {
-            listaGastos.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay gastos.</td></tr>';
+            const colSpan = esTerminada ? "6" : "7";
+            listaGastos.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">No hay gastos.</td></tr>`;
             spanTotalArs.textContent = '0.00';
             spanTotalUsd.textContent = '0.00';
             actualizarGrafico({});
             return;
         }
 
-        // Construir HTML de la Tabla
         gastosOrdenados.forEach((gasto) => {
             totalArs += gasto.precio;
-            let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; // Usamos el dolar del momento de la compra
+            let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; 
             totalUsd += usdGasto;
             
             let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
@@ -469,39 +567,41 @@
             const extSeguro = (gasto.extra || '').replace(/'/g, "\\'");
 
             const tr = document.createElement('tr');
-            tr.innerHTML = `
+            
+            let htmlFila = `
                 <td>${gasto.fechaStr}</td>
                 <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
                 <td>${gasto.detalle}</td>
                 <td>${gasto.extra || '-'}</td>
                 <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
                 <td style="color: #27ae60; font-weight: bold;">U$D ${usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-                <td>
-                    <button type="button" class="btn-warning" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}', '${extSeguro}')">Editar</button>
-                </td>
             `;
+
+            // Solo agregamos el botón de editar si la obra NO está terminada
+            if (!esTerminada) {
+                htmlFila += `<td>
+                    <button type="button" class="btn-warning" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}', '${extSeguro}')">Editar</button>
+                </td>`;
+            }
+
+            tr.innerHTML = htmlFila;
             listaGastos.appendChild(tr);
 
-            // Preparar datos para el gráfico (Cronológico siempre)
             if (!gastosPorFecha[gasto.fechaStr]) gastosPorFecha[gasto.fechaStr] = 0;
             gastosPorFecha[gasto.fechaStr] += gasto.precio;
         });
 
         spanTotalArs.textContent = totalArs.toLocaleString('es-AR', { minimumFractionDigits: 2 });
         spanTotalUsd.textContent = totalUsd.toLocaleString('es-AR', { minimumFractionDigits: 2 });
-        
         actualizarGrafico(gastosPorFecha);
     }
 
-    // LÓGICA DEL GRÁFICO (Siempre lo ordena por fecha cronológica)
     function actualizarGrafico(datosFechas) {
-        // Ordenamos las fechas de menor a mayor (cronológicamente) para que el gráfico tenga sentido
         const fechasOrdenadas = Object.keys(datosFechas).sort((a, b) => {
-            const dateA = new Date(a.split('/').reverse().join('-')); // Convierte DD/MM/YYYY a YYYY-MM-DD
+            const dateA = new Date(a.split('/').reverse().join('-')); 
             const dateB = new Date(b.split('/').reverse().join('-'));
             return dateA - dateB;
         });
-        
         const valores = fechasOrdenadas.map(f => datosFechas[f]);
 
         const ctx = document.getElementById('graficoGastos').getContext('2d');
@@ -513,28 +613,19 @@
                 labels: fechasOrdenadas,
                 datasets: [{
                     label: 'Gasto Total por Día (ARS $)',
-                    data: valores,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#2c3e50',
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.3
+                    data: valores, borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3, pointBackgroundColor: '#2c3e50', pointRadius: 4, fill: true, tension: 0.3
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     }
 
-    // 6. Preparar Edición
     window.prepararEdicion = function(id, categoria, precioArs, precioUsd, detalle, extra) {
         inputIdEditando.value = id;
         document.getElementById('categoria-gasto').value = categoria;
-        
         inputArs.value = formatearConPuntos(precioArs);
         inputUsd.value = formatearConPuntos(precioUsd);
-        
         document.getElementById('detalle-gasto').value = detalle;
         document.getElementById('extra-gasto').value = extra;
 
@@ -554,27 +645,22 @@
 
     btnCancelarEdicion.addEventListener('click', resetearFormulario);
 
-    // 7. Cargar o Actualizar Gasto
     formGasto.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!obraActivaId) return;
+        if (!obraActivaId || datosObraActiva.estado === 'terminada') return;
 
         btnSubmitGasto.disabled = true;
         btnSubmitGasto.textContent = 'Guardando...';
 
         let precioArsLimpio = limpiarNumero(inputArs.value);
         let precioUsdLimpio = limpiarNumero(inputUsd.value);
-        
-        // Derivamos la cotización de este momento exacto de la compra (Para que el historial no mute con los días)
         let cotizacionGuardada = precioArsLimpio / precioUsdLimpio; 
 
         const idEditando = inputIdEditando.value;
 
         try {
             if (idEditando) {
-                // Actualizar
-                const gastoRef = doc(db, "gastos", idEditando);
-                await updateDoc(gastoRef, {
+                await updateDoc(doc(db, "gastos", idEditando), {
                     categoria: document.getElementById('categoria-gasto').value,
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
@@ -582,7 +668,6 @@
                     extra: document.getElementById('extra-gasto').value.trim()
                 });
             } else {
-                // Crear
                 const fechaActual = new Date().toLocaleDateString('es-AR', {
                     day: '2-digit', month: '2-digit', year: 'numeric'
                 });
