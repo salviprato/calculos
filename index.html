@@ -32,7 +32,7 @@
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-page); color: var(--text-main); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.02em; }
         h2 { font-size: 1.25rem; font-weight: 600; margin: 0; }
         h3 { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 0; }
@@ -79,18 +79,17 @@
         .estado-activa { background-color: #dcfce7; color: #166534; }
         .estado-terminada { background-color: #f1f5f9; color: #475569; }
         
-        /* Nuevos colores para las 11 categorías */
-        .cat-albanileria { background-color: #fef3c7; color: #92400e; } /* Ámbar */
-        .cat-instalaciones { background-color: #e0e7ff; color: #3730a3; } /* Índigo */
-        .cat-pintura { background-color: #ccfbf1; color: #115e59; } /* Cerceta */
-        .cat-carpinteria { background-color: #ffedd5; color: #9a3412; } /* Naranja */
-        .cat-amoblamiento { background-color: #fae8ff; color: #86198f; } /* Fucsia */
-        .cat-aridos { background-color: #f3f4f6; color: #374151; } /* Gris */
-        .cat-hormigon { background-color: #e2e8f0; color: #334155; } /* Pizarra */
-        .cat-servicios { background-color: #dbeafe; color: #1e40af; } /* Azul */
-        .cat-honorarios { background-color: #ede9fe; color: #5b21b6; } /* Violeta */
-        .cat-varios { background-color: #f1f5f9; color: #475569; } /* Gris claro */
-        .cat-impuestos { background-color: #fee2e2; color: #991b1b; } /* Rojo */
+        .cat-albanileria { background-color: #fef3c7; color: #92400e; } 
+        .cat-instalaciones { background-color: #e0e7ff; color: #3730a3; } 
+        .cat-pintura { background-color: #ccfbf1; color: #115e59; } 
+        .cat-carpinteria { background-color: #ffedd5; color: #9a3412; } 
+        .cat-amoblamiento { background-color: #fae8ff; color: #86198f; } 
+        .cat-aridos { background-color: #f3f4f6; color: #374151; } 
+        .cat-hormigon { background-color: #e2e8f0; color: #334155; } 
+        .cat-servicios { background-color: #dbeafe; color: #1e40af; } 
+        .cat-honorarios { background-color: #ede9fe; color: #5b21b6; } 
+        .cat-varios { background-color: #f1f5f9; color: #475569; } 
+        .cat-impuestos { background-color: #fee2e2; color: #991b1b; } 
 
         .tabla-contenedor { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
@@ -100,6 +99,7 @@
         tr:hover td { background-color: #f8fafc; }
         .td-precio { font-weight: 600; font-variant-numeric: tabular-nums; }
         .td-usd { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .tipo-text { font-size: 0.8rem; font-weight: 600; color: #475569; text-transform: uppercase; }
 
         .totales-footer { display: flex; justify-content: flex-end; gap: 40px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
         .total-box { text-align: right; }
@@ -165,7 +165,7 @@
                 <input type="hidden" id="id-gasto-editando" value="">
                 
                 <div class="form-group" style="flex: 1;">
-                    <label for="categoria-gasto">Categoría</label>
+                    <label for="categoria-gasto">Rubro</label>
                     <select id="categoria-gasto" required>
                         <option value="Albañilería">Albañilería</option>
                         <option value="Instalaciones">Instalaciones</option>
@@ -178,6 +178,14 @@
                         <option value="Honorarios">Honorarios</option>
                         <option value="Varios">Varios</option>
                         <option value="Impuestos">Impuestos</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 0.8;">
+                    <label for="tipo-gasto">Tipo</label>
+                    <select id="tipo-gasto" required>
+                        <option value="Material">Material</option>
+                        <option value="Mano de Obra">Mano de Obra</option>
                     </select>
                 </div>
                 
@@ -219,7 +227,8 @@
                     <option value="fecha_asc">Más antiguos</option>
                     <option value="valor_desc">Mayor valor</option>
                     <option value="valor_asc">Menor valor</option>
-                    <option value="categoria_asc">Por Categoría (A-Z)</option>
+                    <option value="categoria_asc">Por Rubro (A-Z)</option>
+                    <option value="tipo_asc">Por Tipo (Material/Mano de obra)</option>
                 </select>
             </div>
         </div>
@@ -229,7 +238,8 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Categoría</th>
+                        <th>Rubro</th>
+                        <th>Tipo</th>
                         <th>Descripción</th>
                         <th>ARS</th>
                         <th>USD</th>
@@ -279,7 +289,6 @@
     let obrasMemoria = {}; 
     let tasaDolarOficial = 1000; 
 
-    // Mapa de colores para las categorías
     const coloresCategorias = {
         'Albañilería': 'cat-albanileria',
         'Instalaciones': 'cat-instalaciones',
@@ -515,15 +524,15 @@
             if (orden === 'fecha_asc') return a.tiempoReal - b.tiempoReal;
             if (orden === 'valor_desc') return b.precio - a.precio;
             if (orden === 'valor_asc') return a.precio - b.precio;
-            // Nueva lógica de ordenamiento por categoría
             if (orden === 'categoria_asc') return a.categoria.localeCompare(b.categoria);
+            if (orden === 'tipo_asc') return (a.tipo || '').localeCompare(b.tipo || '');
             return 0;
         });
 
         const esTerminada = datosObraActiva && datosObraActiva.estado === 'terminada';
 
         if (gastosVisuales.length === 0) {
-            const colSpan = esTerminada ? "5" : "6";
+            const colSpan = esTerminada ? "6" : "7";
             listaGastos.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color: #64748b; padding: 30px;">Aún no hay gastos registrados.</td></tr>`;
             spanTotalArs.textContent = '0.00';
             spanTotalUsd.textContent = '0.00';
@@ -536,8 +545,9 @@
             let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; 
             totalUsd += usdGasto;
             
-            // Asignación dinámica del color de la categoría
             let claseCat = coloresCategorias[gasto.categoria] || 'cat-varios';
+            // Valor por defecto en caso de registros viejos
+            let tipoGasto = gasto.tipo || 'Material';
 
             const detSeguro = gasto.detalle.replace(/'/g, "\\'");
 
@@ -546,6 +556,7 @@
             let htmlFila = `
                 <td style="color: var(--text-muted); font-size: 0.85rem;">${gasto.fechaStr}</td>
                 <td><span class="badge ${claseCat}">${gasto.categoria}</span></td>
+                <td><span class="tipo-text">${tipoGasto}</span></td>
                 <td>${gasto.detalle}</td>
                 <td class="td-precio">$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
                 <td class="td-usd">U$D ${usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
@@ -553,7 +564,7 @@
 
             if (!esTerminada) {
                 htmlFila += `<td style="text-align: right;">
-                    <button type="button" class="btn-text" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}')">Editar</button>
+                    <button type="button" class="btn-text" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', '${tipoGasto}', ${gasto.precio}, ${usdGasto}, '${detSeguro}')">Editar</button>
                 </td>`;
             }
 
@@ -604,9 +615,10 @@
         });
     }
 
-    window.prepararEdicion = function(id, categoria, precioArs, precioUsd, detalle) {
+    window.prepararEdicion = function(id, categoria, tipo, precioArs, precioUsd, detalle) {
         inputIdEditando.value = id;
         document.getElementById('categoria-gasto').value = categoria;
+        document.getElementById('tipo-gasto').value = tipo;
         inputArs.value = formatearConPuntos(precioArs);
         inputUsd.value = formatearConPuntos(precioUsd);
         document.getElementById('detalle-gasto').value = detalle;
@@ -647,6 +659,7 @@
             if (idEditando) {
                 await updateDoc(doc(db, "gastos", idEditando), {
                     categoria: document.getElementById('categoria-gasto').value,
+                    tipo: document.getElementById('tipo-gasto').value,
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim()
@@ -658,6 +671,7 @@
                 await addDoc(collection(db, "gastos"), {
                     obraId: obraActivaId,
                     categoria: document.getElementById('categoria-gasto').value,
+                    tipo: document.getElementById('tipo-gasto').value,
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim(),
@@ -683,7 +697,8 @@
         doc.setTextColor(100);
         doc.text(`Fecha de exportación: ${new Date().toLocaleDateString('es-AR')}`, 14, 30);
         
-        const tableColumn = ["Fecha", "Categoría", "Descripción", "ARS ($)", "USD (U$D)"];
+        // Se agrega la columna TIPO al PDF
+        const tableColumn = ["Fecha", "Rubro", "Tipo", "Descripción", "ARS ($)", "USD (U$D)"];
         const tableRows = [];
         let totalArs = 0; let totalUsd = 0;
 
@@ -691,13 +706,17 @@
             const usdGasto = gasto.precio / gasto.cotizacionDolarGuardada;
             totalArs += gasto.precio; totalUsd += usdGasto;
             tableRows.push([
-                gasto.fechaStr, gasto.categoria, gasto.detalle,
+                gasto.fechaStr, gasto.categoria, gasto.tipo || 'Material', gasto.detalle,
                 gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
                 usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })
             ]);
         });
 
-        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 40, theme: 'striped', headStyles: { fillColor: [15, 23, 42] }, styles: { fontSize: 10, cellPadding: 3 }, columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } } });
+        doc.autoTable({ 
+            head: [tableColumn], body: tableRows, startY: 40, theme: 'striped', 
+            headStyles: { fillColor: [15, 23, 42] }, styles: { fontSize: 9, cellPadding: 3 }, 
+            columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' } } 
+        });
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12); doc.setTextColor(0);
         doc.text(`Total ARS: $${totalArs.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 14, finalY);
@@ -709,12 +728,19 @@
         if (!datosObraActiva || gastosVisuales.length === 0) return alert('No hay gastos registrados para exportar.');
         const datosExcel = gastosVisuales.map(gasto => {
             const usdGasto = gasto.precio / gasto.cotizacionDolarGuardada;
-            return { "Fecha": gasto.fechaStr, "Categoría": gasto.categoria, "Descripción": gasto.detalle, "Monto ARS ($)": gasto.precio, "Monto USD (U$D)": parseFloat(usdGasto.toFixed(2)) };
+            return { 
+                "Fecha": gasto.fechaStr, 
+                "Rubro": gasto.categoria, 
+                "Tipo": gasto.tipo || 'Material', 
+                "Descripción": gasto.detalle, 
+                "Monto ARS ($)": gasto.precio, 
+                "Monto USD (U$D)": parseFloat(usdGasto.toFixed(2)) 
+            };
         });
         const worksheet = XLSX.utils.json_to_sheet(datosExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Gastos de Obra");
-        worksheet['!cols'] = [ { wch: 12 }, { wch: 20 }, { wch: 35 }, { wch: 15 }, { wch: 15 } ];
+        worksheet['!cols'] = [ { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 35 }, { wch: 15 }, { wch: 15 } ];
         XLSX.writeFile(workbook, `Gastos_${datosObraActiva.nombre.replace(/\s+/g, '_')}.xlsx`);
     });
 
