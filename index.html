@@ -5,45 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Gastos por Obra</title>
     <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+            --border: #ddd;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--bg);
             color: #333;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1200px; /* Ampliado para que la tabla ocupe más espacio */
             margin: 0 auto;
             background: #ffffff;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        h1, h2 {
-            color: #2c3e50;
-            margin-top: 0;
+        h1, h2, h3 { color: var(--dark); margin-top: 0; }
+        
+        /* Acordeón */
+        details {
+            background: #fdfdfd;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
         }
-        .grid-2 {
+        summary {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            list-style: none; /* Oculta la flecha por defecto en algunos navegadores */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after {
+            content: '▼';
+            font-size: 0.8em;
+            color: var(--dark);
+        }
+        details[open] summary::after { content: '▲'; }
+        .accordion-content {
+            padding: 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            border-top: 1px solid var(--border);
         }
+
         .section {
-            background: #fdfdfd;
-            border: 1px solid #eee;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
+            border: 1px solid var(--border);
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
+        
+        /* Formulario Horizontal */
+        .form-horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
         }
+        .form-horizontal .form-group {
+            flex: 1;
+            min-width: 150px; /* Para que en pantallas chicas baje de línea */
+            margin-bottom: 0;
+        }
+        .form-horizontal button {
+            width: auto;
+            padding: 10px 25px;
+        }
+
+        .form-group { margin-bottom: 15px; }
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #555;
         }
         input, select {
@@ -55,29 +105,23 @@
             font-family: inherit;
         }
         button {
-            background-color: #3498db;
+            background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            width: 100%;
             transition: background 0.3s;
         }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .btn-success {
-            background-color: #2ecc71;
-        }
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
+        button:hover { background-color: #2980b9; }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #27ae60; }
+        
+        /* Tabla */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
             font-size: 0.9em;
         }
         th, td {
@@ -85,10 +129,7 @@
             padding: 12px;
             border-bottom: 1px solid #eee;
         }
-        th {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-        }
+        th { background-color: #f8f9fa; color: var(--dark); }
         .badge {
             padding: 4px 8px;
             border-radius: 12px;
@@ -99,72 +140,68 @@
         .bg-materiales { background-color: #e67e22; }
         .bg-mano-obra { background-color: #9b59b6; }
         .bg-extras { background-color: #95a5a6; }
-        #panel-gastos {
-            display: none; /* Se oculta hasta que se seleccione una obra */
-        }
+        
+        #panel-gastos { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Gestión de Obras</h1>
+    <h1>Panel de Control de Obras</h1>
 
-    <div class="grid-2">
-        <div class="section">
-            <h2>1. Crear Nueva Obra</h2>
-            <div class="form-group">
-                <label for="nombre-obra">Nombre de la Obra</label>
-                <input type="text" id="nombre-obra" placeholder="Ej: Remodelación Casa Central">
+    <details open> <summary>Gestión de Obras (Crear y Seleccionar)</summary>
+        <div class="accordion-content">
+            <div>
+                <label for="nombre-obra">Nueva Obra</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="nombre-obra" placeholder="Nombre de la obra">
+                    <button id="btn-crear-obra">Crear</button>
+                </div>
             </div>
-            <button onclick="crearObra()">Crear Obra</button>
-        </div>
-
-        <div class="section">
-            <h2>2. Seleccionar Obra</h2>
-            <div class="form-group">
-                <label for="select-obra">Elegí una obra para gestionar</label>
-                <select id="select-obra" onchange="seleccionarObra()">
+            <div>
+                <label for="select-obra">Seleccionar Obra Existente</label>
+                <select id="select-obra">
                     <option value="">-- Seleccioná una obra --</option>
                 </select>
             </div>
         </div>
-    </div>
+    </details>
 
     <div id="panel-gastos">
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-        <h2 id="titulo-obra-activa">Gastos de la Obra</h2>
+        <h2 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">
+            Administrando: <span id="titulo-obra-activa" style="color: var(--primary);"></span>
+        </h2>
 
-        <div class="grid-2">
-            <div class="section">
-                <h3>Cargar Gasto</h3>
-                <form id="form-gasto" onsubmit="guardarGasto(event)">
-                    <div class="form-group">
-                        <label for="categoria-gasto">Categoría</label>
-                        <select id="categoria-gasto" required>
-                            <option value="Materiales">Materiales</option>
-                            <option value="Mano de Obra">Mano de Obra</option>
-                            <option value="Extras">Extras</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="precio-gasto">Precio ($)</label>
-                        <input type="number" id="precio-gasto" step="0.01" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="detalle-gasto">Detalle</label>
-                        <input type="text" id="detalle-gasto" required placeholder="Ej: 10 bolsas de cemento">
-                    </div>
-                    <div class="form-group">
-                        <label for="extra-gasto">Información Extra (Opcional)</label>
-                        <input type="text" id="extra-gasto" placeholder="Ej: Comprado en corralón X">
-                    </div>
-                    <button type="submit" class="btn-success">Guardar Gasto</button>
-                </form>
-            </div>
+        <div class="section">
+            <form id="form-gasto" class="form-horizontal">
+                <div class="form-group">
+                    <label for="categoria-gasto">Categoría</label>
+                    <select id="categoria-gasto" required>
+                        <option value="Materiales">Materiales</option>
+                        <option value="Mano de Obra">Mano de Obra</option>
+                        <option value="Extras">Extras</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="precio-gasto">Precio ($)</label>
+                    <input type="number" id="precio-gasto" step="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="detalle-gasto">Detalle</label>
+                    <input type="text" id="detalle-gasto" required placeholder="Ej: Cemento">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="extra-gasto">Extra</label>
+                    <input type="text" id="extra-gasto" placeholder="Opcional">
+                </div>
+                <button type="submit" class="btn-success">Cargar Gasto</button>
+            </form>
+        </div>
 
-            <div class="section" style="overflow-x: auto;">
-                <h3>Historial de Gastos</h3>
-                <table id="tabla-gastos">
+        <div class="section" style="padding: 0; border: none; background: transparent;">
+            <h3>Gastos</h3>
+            <div style="background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto;">
+                <table>
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -177,151 +214,183 @@
                     <tbody id="lista-gastos">
                         </tbody>
                 </table>
-                <h3 style="text-align: right; margin-top: 20px;">Total: $<span id="total-gastos">0.00</span></h3>
             </div>
+            <h3 style="text-align: right; margin-top: 15px; font-size: 1.5em;">
+                Total: $<span id="total-gastos">0.00</span>
+            </h3>
         </div>
     </div>
 </div>
 
-<script>
-    // Variables globales
-    let obras = JSON.parse(localStorage.getItem('obrasDB')) || [];
-    let obraActivaId = null;
+<script type="module">
+    // Importamos funciones de Firebase desde el CDN oficial
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { 
+        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // Inicializar la vista
-    document.addEventListener('DOMContentLoaded', () => {
-        actualizarSelectObras();
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWtvTrQ11b7iWF_5HyZu9SKCmBMnV1f9M",
+      authDomain: "calculos-a3461.firebaseapp.com",
+      projectId: "calculos-a3461",
+      storageBucket: "calculos-a3461.firebasestorage.app",
+      messagingSenderId: "319504557142",
+      appId: "1:319504557142:web:3211c1473c73d1080cc7f7"
+    };
+
+    // Inicializar Firebase y Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Variables de estado
+    let obraActivaId = null;
+    let unsubscribeGastos = null; // Para limpiar el listener cuando cambiamos de obra
+
+    // Referencias al DOM
+    const selectObra = document.getElementById('select-obra');
+    const panelGastos = document.getElementById('panel-gastos');
+    const tituloObraActiva = document.getElementById('titulo-obra-activa');
+    const formGasto = document.getElementById('form-gasto');
+    const btnCrearObra = document.getElementById('btn-crear-obra');
+
+    // 1. Escuchar Obras en tiempo real (Read)
+    const obrasRef = collection(db, "obras");
+    const qObras = query(obrasRef, orderBy("fechaCreacion", "desc"));
+    
+    onSnapshot(qObras, (snapshot) => {
+        // Guardamos el valor actual seleccionado para no perderlo al actualizar
+        const valorActual = selectObra.value;
+        selectObra.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
+        
+        snapshot.forEach((doc) => {
+            const obra = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = obra.nombre;
+            selectObra.appendChild(option);
+        });
+
+        if (valorActual) selectObra.value = valorActual;
     });
 
-    // 1. Crear una nueva obra
-    function crearObra() {
+    // 2. Crear Nueva Obra (Create)
+    btnCrearObra.addEventListener('click', async () => {
         const nombreInput = document.getElementById('nombre-obra');
         const nombre = nombreInput.value.trim();
 
-        if (!nombre) {
-            alert("Por favor, ingresá un nombre para la obra.");
-            return;
+        if (!nombre) return alert("Ingresá un nombre para la obra.");
+
+        try {
+            const docRef = await addDoc(collection(db, "obras"), {
+                nombre: nombre,
+                fechaCreacion: serverTimestamp()
+            });
+            nombreInput.value = '';
+            
+            // Auto-seleccionar la obra creada
+            selectObra.value = docRef.id;
+            selectObra.dispatchEvent(new Event('change'));
+            
+            // Cerrar el acordeón automáticamente para dejar la pantalla limpia
+            document.querySelector('details').removeAttribute('open');
+        } catch (e) {
+            console.error("Error al crear obra: ", e);
+            alert("Hubo un error al crear la obra. Revisá la consola.");
+        }
+    });
+
+    // 3. Seleccionar Obra y cargar sus gastos
+    selectObra.addEventListener('change', (e) => {
+        obraActivaId = e.target.value;
+        
+        if (unsubscribeGastos) {
+            unsubscribeGastos(); // Dejamos de escuchar la obra anterior
         }
 
-        const nuevaObra = {
-            id: Date.now().toString(), // Genera un ID único basado en el tiempo
-            nombre: nombre,
-            gastos: []
-        };
-
-        obras.push(nuevaObra);
-        guardarEnLocalStorage();
-        
-        nombreInput.value = ''; // Limpiar input
-        actualizarSelectObras();
-        
-        // Seleccionar automáticamente la obra recién creada
-        document.getElementById('select-obra').value = nuevaObra.id;
-        seleccionarObra();
-    }
-
-    // 2. Actualizar el desplegable de obras
-    function actualizarSelectObras() {
-        const select = document.getElementById('select-obra');
-        select.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
-        
-        obras.forEach(obra => {
-            const option = document.createElement('option');
-            option.value = obra.id;
-            option.textContent = obra.nombre;
-            select.appendChild(option);
-        });
-    }
-
-    // 3. Seleccionar una obra del desplegable
-    function seleccionarObra() {
-        const select = document.getElementById('select-obra');
-        obraActivaId = select.value;
-        const panelGastos = document.getElementById('panel-gastos');
-
         if (obraActivaId) {
-            const obraActiva = obras.find(o => o.id === obraActivaId);
-            document.getElementById('titulo-obra-activa').textContent = `Administrando: ${obraActiva.nombre}`;
+            const nombreObra = e.target.options[e.target.selectedIndex].text;
+            tituloObraActiva.textContent = nombreObra;
             panelGastos.style.display = 'block';
-            renderizarGastos();
+            
+            // Escuchar gastos de esta obra en particular
+            escucharGastos(obraActivaId);
         } else {
             panelGastos.style.display = 'none';
         }
+    });
+
+    // 4. Escuchar Gastos de la obra activa en tiempo real
+    function escucharGastos(obraId) {
+        const gastosRef = collection(db, "gastos");
+        const qGastos = query(gastosRef, where("obraId", "==", obraId), orderBy("timestamp", "desc"));
+
+        unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
+            const listaGastos = document.getElementById('lista-gastos');
+            const totalGastosSpan = document.getElementById('total-gastos');
+            listaGastos.innerHTML = '';
+            let total = 0;
+
+            if (snapshot.empty) {
+                listaGastos.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay gastos registrados.</td></tr>';
+                totalGastosSpan.textContent = '0.00';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const gasto = doc.data();
+                total += gasto.precio;
+                
+                let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
+                                 gasto.categoria === 'Mano de Obra' ? 'bg-mano-obra' : 'bg-extras';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${gasto.fechaStr}</td>
+                    <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
+                    <td>${gasto.detalle}</td>
+                    <td>${gasto.extra || '-'}</td>
+                    <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                `;
+                listaGastos.appendChild(tr);
+            });
+
+            totalGastosSpan.textContent = total.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+        });
     }
 
-    // 4. Guardar un gasto en la obra activa
-    function guardarGasto(e) {
-        e.preventDefault(); // Evita que la página se recargue
-
+    // 5. Cargar un nuevo Gasto (Create)
+    formGasto.addEventListener('submit', async (e) => {
+        e.preventDefault();
         if (!obraActivaId) return;
 
-        // Obtener la fecha actual automáticamente
+        const btnSubmit = formGasto.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true; // Prevenir doble click
+        btnSubmit.textContent = 'Guardando...';
+
         const fechaActual = new Date().toLocaleDateString('es-AR', {
             day: '2-digit', month: '2-digit', year: 'numeric'
         });
 
-        const nuevoGasto = {
-            id: Date.now().toString(),
-            fecha: fechaActual,
-            categoria: document.getElementById('categoria-gasto').value,
-            precio: parseFloat(document.getElementById('precio-gasto').value),
-            detalle: document.getElementById('detalle-gasto').value.trim(),
-            extra: document.getElementById('extra-gasto').value.trim()
-        };
-
-        // Encontrar la obra y agregar el gasto
-        const obraIndex = obras.findIndex(o => o.id === obraActivaId);
-        obras[obraIndex].gastos.push(nuevoGasto);
-        
-        guardarEnLocalStorage();
-        renderizarGastos();
-        
-        // Limpiar el formulario
-        document.getElementById('form-gasto').reset();
-    }
-
-    // 5. Mostrar los gastos en la tabla
-    function renderizarGastos() {
-        const listaGastos = document.getElementById('lista-gastos');
-        const totalGastosSpan = document.getElementById('total-gastos');
-        listaGastos.innerHTML = '';
-        
-        const obraActiva = obras.find(o => o.id === obraActivaId);
-        let total = 0;
-
-        if (!obraActiva || obraActiva.gastos.length === 0) {
-            listaGastos.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay gastos registrados todavía.</td></tr>';
-            totalGastosSpan.textContent = '0.00';
-            return;
+        try {
+            await addDoc(collection(db, "gastos"), {
+                obraId: obraActivaId,
+                categoria: document.getElementById('categoria-gasto').value,
+                precio: parseFloat(document.getElementById('precio-gasto').value),
+                detalle: document.getElementById('detalle-gasto').value.trim(),
+                extra: document.getElementById('extra-gasto').value.trim(),
+                fechaStr: fechaActual,
+                timestamp: serverTimestamp() // Para ordenar cronológicamente en Firebase
+            });
+            formGasto.reset();
+        } catch (error) {
+            console.error("Error al guardar gasto:", error);
+            alert("Error al guardar. Asegurate de que las reglas de Firestore permitan escritura.");
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Cargar Gasto';
         }
-
-        obraActiva.gastos.forEach(gasto => {
-            total += gasto.precio;
-            
-            // Asignar clase de color según categoría
-            let claseBadge = '';
-            if (gasto.categoria === 'Materiales') claseBadge = 'bg-materiales';
-            else if (gasto.categoria === 'Mano de Obra') claseBadge = 'bg-mano-obra';
-            else claseBadge = 'bg-extras';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${gasto.fecha}</td>
-                <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
-                <td>${gasto.detalle}</td>
-                <td>${gasto.extra || '-'}</td>
-                <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-            `;
-            listaGastos.appendChild(tr);
-        });
-
-        totalGastosSpan.textContent = total.toLocaleString('es-AR', { minimumFractionDigits: 2 });
-    }
-
-    // Utilidad: Guardar en el almacenamiento del navegador
-    function guardarEnLocalStorage() {
-        localStorage.setItem('obrasDB', JSON.stringify(obras));
-    }
+    });
 </script>
 
 </body>
