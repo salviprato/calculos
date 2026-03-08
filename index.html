@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Gastos por Obra</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #3498db;
             --success: #2ecc71;
+            --warning: #f39c12;
             --dark: #2c3e50;
             --bg: #f4f7f6;
             --border: #ddd;
@@ -20,7 +22,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1200px; /* Ampliado para que la tabla ocupe más espacio */
+            max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
             padding: 30px;
@@ -29,7 +31,6 @@
         }
         h1, h2, h3 { color: var(--dark); margin-top: 0; }
         
-        /* Acordeón */
         details {
             background: #fdfdfd;
             border: 1px solid var(--border);
@@ -43,17 +44,13 @@
             font-weight: bold;
             font-size: 1.1em;
             cursor: pointer;
-            list-style: none; /* Oculta la flecha por defecto en algunos navegadores */
+            list-style: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         summary::-webkit-details-marker { display: none; }
-        summary::after {
-            content: '▼';
-            font-size: 0.8em;
-            color: var(--dark);
-        }
+        summary::after { content: '▼'; font-size: 0.8em; color: var(--dark); }
         details[open] summary::after { content: '▲'; }
         .accordion-content {
             padding: 20px;
@@ -71,7 +68,6 @@
             margin-bottom: 20px;
         }
         
-        /* Formulario Horizontal */
         .form-horizontal {
             display: flex;
             flex-wrap: wrap;
@@ -80,7 +76,7 @@
         }
         .form-horizontal .form-group {
             flex: 1;
-            min-width: 150px; /* Para que en pantallas chicas baje de línea */
+            min-width: 150px;
             margin-bottom: 0;
         }
         .form-horizontal button {
@@ -89,13 +85,7 @@
         }
 
         .form-group { margin-bottom: 15px; }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.85em;
-            color: #555;
-        }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #555; }
         input, select {
             width: 100%;
             padding: 10px;
@@ -117,31 +107,19 @@
         button:hover { background-color: #2980b9; }
         .btn-success { background-color: var(--success); }
         .btn-success:hover { background-color: #27ae60; }
+        .btn-warning { background-color: var(--warning); padding: 5px 10px; font-size: 0.8em;}
+        .btn-warning:hover { background-color: #d68910; }
         
-        /* Tabla */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
         th { background-color: #f8f9fa; color: var(--dark); }
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: bold;
-            color: white;
-        }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; color: white; }
         .bg-materiales { background-color: #e67e22; }
         .bg-mano-obra { background-color: #9b59b6; }
         .bg-extras { background-color: #95a5a6; }
         
         #panel-gastos { display: none; }
+        .grafico-container { position: relative; height: 300px; width: 100%; }
     </style>
 </head>
 <body>
@@ -149,7 +127,8 @@
 <div class="container">
     <h1>Panel de Control de Obras</h1>
 
-    <details open> <summary>Gestión de Obras (Crear y Seleccionar)</summary>
+    <details open>
+        <summary>Gestión de Obras (Crear y Seleccionar)</summary>
         <div class="accordion-content">
             <div>
                 <label for="nombre-obra">Nueva Obra</label>
@@ -174,6 +153,8 @@
 
         <div class="section">
             <form id="form-gasto" class="form-horizontal">
+                <input type="hidden" id="id-gasto-editando" value="">
+                
                 <div class="form-group">
                     <label for="categoria-gasto">Categoría</label>
                     <select id="categoria-gasto" required>
@@ -184,7 +165,7 @@
                 </div>
                 <div class="form-group">
                     <label for="precio-gasto">Precio ($)</label>
-                    <input type="number" id="precio-gasto" step="0.01" required placeholder="0.00">
+                    <input type="text" id="precio-gasto" required placeholder="0.00">
                 </div>
                 <div class="form-group" style="flex: 2;">
                     <label for="detalle-gasto">Detalle</label>
@@ -194,12 +175,22 @@
                     <label for="extra-gasto">Extra</label>
                     <input type="text" id="extra-gasto" placeholder="Opcional">
                 </div>
-                <button type="submit" class="btn-success">Cargar Gasto</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" id="btn-submit-gasto" class="btn-success">Cargar Gasto</button>
+                    <button type="button" id="btn-cancelar-edicion" style="display: none; background: #95a5a6;">Cancelar</button>
+                </div>
             </form>
         </div>
 
+        <div class="section">
+            <h3>Evolución de Gastos en el Tiempo</h3>
+            <div class="grafico-container">
+                <canvas id="graficoGastos"></canvas>
+            </div>
+        </div>
+
         <div class="section" style="padding: 0; border: none; background: transparent;">
-            <h3>Gastos</h3>
+            <h3>Historial de Gastos</h3>
             <div style="background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto;">
                 <table>
                     <thead>
@@ -209,6 +200,7 @@
                             <th>Detalle</th>
                             <th>Extra</th>
                             <th>Precio</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="lista-gastos">
@@ -223,13 +215,11 @@
 </div>
 
 <script type="module">
-    // Importamos funciones de Firebase desde el CDN oficial
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { 
-        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp 
+        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, doc, updateDoc 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // Tu configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCWtvTrQ11b7iWF_5HyZu9SKCmBMnV1f9M",
       authDomain: "calculos-a3461.firebaseapp.com",
@@ -239,110 +229,122 @@
       appId: "1:319504557142:web:3211c1473c73d1080cc7f7"
     };
 
-    // Inicializar Firebase y Firestore
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Variables de estado
     let obraActivaId = null;
-    let unsubscribeGastos = null; // Para limpiar el listener cuando cambiamos de obra
+    let unsubscribeGastos = null;
+    let chartInstance = null; // Guardamos el gráfico para actualizarlo
 
-    // Referencias al DOM
+    // Referencias DOM
     const selectObra = document.getElementById('select-obra');
     const panelGastos = document.getElementById('panel-gastos');
     const tituloObraActiva = document.getElementById('titulo-obra-activa');
     const formGasto = document.getElementById('form-gasto');
     const btnCrearObra = document.getElementById('btn-crear-obra');
+    const inputPrecio = document.getElementById('precio-gasto');
+    const btnSubmitGasto = document.getElementById('btn-submit-gasto');
+    const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion');
+    const inputIdEditando = document.getElementById('id-gasto-editando');
 
-    // 1. Escuchar Obras en tiempo real (Read)
-    const obrasRef = collection(db, "obras");
-    const qObras = query(obrasRef, orderBy("fechaCreacion", "desc"));
-    
+    // LÓGICA: Separador de miles en tiempo real
+    inputPrecio.addEventListener('input', function(e) {
+        // Permitimos solo números y la coma
+        let valor = this.value.replace(/[^\d,]/g, '');
+        let partes = valor.split(',');
+        
+        // Formateamos la parte entera con puntos cada 3 cifras
+        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        
+        // Si hay decimales, limitamos a 2
+        if (partes.length > 1) {
+            partes[1] = partes[1].substring(0, 2);
+            this.value = partes[0] + ',' + partes[1];
+        } else {
+            this.value = partes[0];
+        }
+    });
+
+    // 1. Escuchar Obras
+    const qObras = query(collection(db, "obras"), orderBy("fechaCreacion", "desc"));
     onSnapshot(qObras, (snapshot) => {
-        // Guardamos el valor actual seleccionado para no perderlo al actualizar
         const valorActual = selectObra.value;
         selectObra.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
-        
         snapshot.forEach((doc) => {
-            const obra = doc.data();
             const option = document.createElement('option');
             option.value = doc.id;
-            option.textContent = obra.nombre;
+            option.textContent = doc.data().nombre;
             selectObra.appendChild(option);
         });
-
         if (valorActual) selectObra.value = valorActual;
     });
 
-    // 2. Crear Nueva Obra (Create)
+    // 2. Crear Obra
     btnCrearObra.addEventListener('click', async () => {
         const nombreInput = document.getElementById('nombre-obra');
-        const nombre = nombreInput.value.trim();
-
-        if (!nombre) return alert("Ingresá un nombre para la obra.");
-
+        if (!nombreInput.value.trim()) return alert("Ingresá un nombre.");
         try {
             const docRef = await addDoc(collection(db, "obras"), {
-                nombre: nombre,
+                nombre: nombreInput.value.trim(),
                 fechaCreacion: serverTimestamp()
             });
             nombreInput.value = '';
-            
-            // Auto-seleccionar la obra creada
             selectObra.value = docRef.id;
             selectObra.dispatchEvent(new Event('change'));
-            
-            // Cerrar el acordeón automáticamente para dejar la pantalla limpia
             document.querySelector('details').removeAttribute('open');
-        } catch (e) {
-            console.error("Error al crear obra: ", e);
-            alert("Hubo un error al crear la obra. Revisá la consola.");
-        }
+        } catch (e) { console.error(e); }
     });
 
-    // 3. Seleccionar Obra y cargar sus gastos
+    // 3. Seleccionar Obra
     selectObra.addEventListener('change', (e) => {
         obraActivaId = e.target.value;
+        if (unsubscribeGastos) unsubscribeGastos();
         
-        if (unsubscribeGastos) {
-            unsubscribeGastos(); // Dejamos de escuchar la obra anterior
-        }
-
         if (obraActivaId) {
-            const nombreObra = e.target.options[e.target.selectedIndex].text;
-            tituloObraActiva.textContent = nombreObra;
+            tituloObraActiva.textContent = e.target.options[e.target.selectedIndex].text;
             panelGastos.style.display = 'block';
-            
-            // Escuchar gastos de esta obra en particular
+            resetearFormulario(); // Limpia si había algo editándose de otra obra
             escucharGastos(obraActivaId);
         } else {
             panelGastos.style.display = 'none';
         }
     });
 
-    // 4. Escuchar Gastos de la obra activa en tiempo real
+    // 4. Escuchar Gastos, Mostrar Tabla y Renderizar Gráfico
     function escucharGastos(obraId) {
-        const gastosRef = collection(db, "gastos");
-        const qGastos = query(gastosRef, where("obraId", "==", obraId), orderBy("timestamp", "desc"));
+        const qGastos = query(collection(db, "gastos"), where("obraId", "==", obraId), orderBy("timestamp", "asc"));
 
         unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
             const listaGastos = document.getElementById('lista-gastos');
             const totalGastosSpan = document.getElementById('total-gastos');
             listaGastos.innerHTML = '';
             let total = 0;
+            
+            // Datos para el gráfico
+            const gastosPorFecha = {};
 
-            if (snapshot.empty) {
-                listaGastos.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay gastos registrados.</td></tr>';
+            // Invertimos el array visualmente para que la tabla muestre lo más nuevo arriba
+            const docsInvertidos = [...snapshot.docs].reverse();
+
+            if (docsInvertidos.length === 0) {
+                listaGastos.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay gastos.</td></tr>';
                 totalGastosSpan.textContent = '0.00';
+                actualizarGrafico({}); // Limpia el gráfico
                 return;
             }
 
-            snapshot.forEach((doc) => {
-                const gasto = doc.data();
+            // Procesar para la TABLA (orden descendente)
+            docsInvertidos.forEach((docSnap) => {
+                const gasto = docSnap.data();
+                const id = docSnap.id;
                 total += gasto.precio;
                 
                 let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
                                  gasto.categoria === 'Mano de Obra' ? 'bg-mano-obra' : 'bg-extras';
+
+                // Escapamos strings para evitar errores al pasarlos a la función del botón
+                const detSeguro = gasto.detalle.replace(/'/g, "\\'");
+                const extSeguro = (gasto.extra || '').replace(/'/g, "\\'");
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -351,44 +353,141 @@
                     <td>${gasto.detalle}</td>
                     <td>${gasto.extra || '-'}</td>
                     <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                    <td>
+                        <button type="button" class="btn-warning" onclick="window.prepararEdicion('${id}', '${gasto.categoria}', ${gasto.precio}, '${detSeguro}', '${extSeguro}')">Editar</button>
+                    </td>
                 `;
                 listaGastos.appendChild(tr);
             });
 
+            // Procesar para el GRÁFICO (orden ascendente, como viene por defecto de Firebase)
+            snapshot.docs.forEach((docSnap) => {
+                const gasto = docSnap.data();
+                if (!gastosPorFecha[gasto.fechaStr]) {
+                    gastosPorFecha[gasto.fechaStr] = 0;
+                }
+                gastosPorFecha[gasto.fechaStr] += gasto.precio;
+            });
+
             totalGastosSpan.textContent = total.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+            actualizarGrafico(gastosPorFecha);
         });
     }
 
-    // 5. Cargar un nuevo Gasto (Create)
+    // LÓGICA DEL GRÁFICO
+    function actualizarGrafico(datosFechas) {
+        const ctx = document.getElementById('graficoGastos').getContext('2d');
+        const fechas = Object.keys(datosFechas);
+        const valores = Object.values(datosFechas);
+
+        if (chartInstance) {
+            chartInstance.destroy(); // Destruir el gráfico anterior para redibujar
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Gasto Total por Día ($)',
+                    data: valores,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#2c3e50',
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.3 // Curva suavizada
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // 5. Preparar Edición (Vinculado al botón de la tabla)
+    window.prepararEdicion = function(id, categoria, precioNum, detalle, extra) {
+        inputIdEditando.value = id;
+        document.getElementById('categoria-gasto').value = categoria;
+        
+        // Transformar el número de vuelta a formato con puntos y comas para el input
+        let precioStr = precioNum.toFixed(2).replace('.', ',');
+        precioStr = precioStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        inputPrecio.value = precioStr;
+        
+        document.getElementById('detalle-gasto').value = detalle;
+        document.getElementById('extra-gasto').value = extra;
+
+        // Cambiar el estilo del formulario para indicar que estamos editando
+        btnSubmitGasto.textContent = 'Actualizar Gasto';
+        btnSubmitGasto.style.backgroundColor = '#f39c12'; // Naranja
+        btnCancelarEdicion.style.display = 'inline-block';
+        
+        // Scrollear hacia arriba para que el usuario vea el formulario
+        document.getElementById('form-gasto').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    function resetearFormulario() {
+        formGasto.reset();
+        inputIdEditando.value = '';
+        btnSubmitGasto.textContent = 'Cargar Gasto';
+        btnSubmitGasto.style.backgroundColor = '#2ecc71'; // Vuelve a Verde
+        btnCancelarEdicion.style.display = 'none';
+    }
+
+    btnCancelarEdicion.addEventListener('click', resetearFormulario);
+
+    // 6. Cargar o Actualizar Gasto
     formGasto.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!obraActivaId) return;
 
-        const btnSubmit = formGasto.querySelector('button[type="submit"]');
-        btnSubmit.disabled = true; // Prevenir doble click
-        btnSubmit.textContent = 'Guardando...';
+        btnSubmitGasto.disabled = true;
+        btnSubmitGasto.textContent = 'Guardando...';
 
-        const fechaActual = new Date().toLocaleDateString('es-AR', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        });
+        // Desarmar el string (ej: 1.500,50 -> 1500.50) para guardarlo como número real en Firebase
+        let precioString = inputPrecio.value;
+        let precioLimpio = precioString.replace(/\./g, '').replace(',', '.');
+        let precioFinal = parseFloat(precioLimpio);
+
+        const idEditando = inputIdEditando.value;
 
         try {
-            await addDoc(collection(db, "gastos"), {
-                obraId: obraActivaId,
-                categoria: document.getElementById('categoria-gasto').value,
-                precio: parseFloat(document.getElementById('precio-gasto').value),
-                detalle: document.getElementById('detalle-gasto').value.trim(),
-                extra: document.getElementById('extra-gasto').value.trim(),
-                fechaStr: fechaActual,
-                timestamp: serverTimestamp() // Para ordenar cronológicamente en Firebase
-            });
-            formGasto.reset();
+            if (idEditando) {
+                // MODO EDICIÓN
+                const gastoRef = doc(db, "gastos", idEditando);
+                await updateDoc(gastoRef, {
+                    categoria: document.getElementById('categoria-gasto').value,
+                    precio: precioFinal,
+                    detalle: document.getElementById('detalle-gasto').value.trim(),
+                    extra: document.getElementById('extra-gasto').value.trim()
+                });
+            } else {
+                // MODO CREACIÓN
+                const fechaActual = new Date().toLocaleDateString('es-AR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric'
+                });
+                await addDoc(collection(db, "gastos"), {
+                    obraId: obraActivaId,
+                    categoria: document.getElementById('categoria-gasto').value,
+                    precio: precioFinal,
+                    detalle: document.getElementById('detalle-gasto').value.trim(),
+                    extra: document.getElementById('extra-gasto').value.trim(),
+                    fechaStr: fechaActual,
+                    timestamp: serverTimestamp() 
+                });
+            }
+            resetearFormulario();
         } catch (error) {
-            console.error("Error al guardar gasto:", error);
-            alert("Error al guardar. Asegurate de que las reglas de Firestore permitan escritura.");
+            console.error(error);
+            alert("Error al guardar en Firebase.");
         } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = 'Cargar Gasto';
+            btnSubmitGasto.disabled = false;
         }
     });
 </script>
