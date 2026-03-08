@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Gastos</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -34,77 +39,40 @@
             padding: 40px 20px;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1100px; margin: 0 auto; }
         h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.02em; }
         h2 { font-size: 1.25rem; font-weight: 600; margin: 0; }
-        h3 { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 15px; }
+        h3 { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 0; }
 
-        /* Acordeones limpios */
+        /* Acordeones */
         details {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-sm);
-            transition: box-shadow 0.2s;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); margin-bottom: 24px;
+            box-shadow: var(--shadow-sm); transition: box-shadow 0.2s;
         }
         details:hover { box-shadow: var(--shadow-md); }
-        
         summary {
-            padding: 20px 24px;
-            font-weight: 600;
-            font-size: 1.05rem;
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--text-main);
+            padding: 20px 24px; font-weight: 600; font-size: 1.05rem;
+            cursor: pointer; list-style: none; display: flex;
+            justify-content: space-between; align-items: center; color: var(--text-main);
         }
         summary::-webkit-details-marker { display: none; }
         summary::after { content: '+'; font-size: 1.2rem; font-weight: 400; color: var(--text-muted); }
         details[open] summary::after { content: '−'; }
-        
-        .accordion-content {
-            padding: 0 24px 24px 24px;
-        }
+        .accordion-content { padding: 0 24px 24px 24px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-        /* Formularios minimalistas */
+        /* Formularios */
         .form-group { margin-bottom: 16px; position: relative; }
-        label { 
-            display: block; 
-            margin-bottom: 6px; 
-            font-size: 0.75rem; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            letter-spacing: 0.05em; 
-            color: var(--text-muted); 
-        }
+        label { display: block; margin-bottom: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
         input, select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            background-color: var(--bg-page);
-            font-family: inherit;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            transition: all 0.2s ease;
-            box-sizing: border-box;
+            width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+            border-radius: var(--radius-md); background-color: var(--bg-page);
+            font-family: inherit; font-size: 0.95rem; color: var(--text-main);
+            transition: all 0.2s ease; box-sizing: border-box;
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
+        input:focus, select:focus { outline: none; border-color: var(--accent); background-color: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         .form-horizontal { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
         .form-horizontal .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
         
@@ -112,95 +80,63 @@
         .input-moneda { padding-left: 35px; }
         .cotizacion-info { position: absolute; font-size: 0.7rem; color: var(--text-muted); right: 0; top: 0; }
 
-        /* Botones elegantes */
+        /* Botones */
         button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            font-family: inherit;
+            background-color: var(--primary); color: white; border: none; padding: 12px 24px;
+            border-radius: var(--radius-md); cursor: pointer; font-weight: 500;
+            font-size: 0.9rem; transition: all 0.2s; font-family: inherit;
         }
         button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-        
         .btn-crear { background-color: var(--primary); width: 100%; }
         .btn-submit { background-color: var(--accent); white-space: nowrap; }
         .btn-submit:hover { background-color: #1d4ed8; }
         
         .btn-text { background: none; color: var(--text-muted); padding: 8px 12px; font-size: 0.85rem; }
         .btn-text:hover { background: #f1f5f9; color: var(--text-main); transform: none; }
-        
         .btn-danger-text { background: none; color: var(--danger); opacity: 0.7; padding: 8px 16px; }
         .btn-danger-text:hover { background: #fee2e2; opacity: 1; transform: none; }
+        
+        /* Nuevos botones de exportación */
+        .btn-export-pdf { color: var(--danger); font-weight: 600; border: 1px solid #fee2e2; }
+        .btn-export-pdf:hover { background: #fee2e2; color: #b91c1c; }
+        .btn-export-excel { color: var(--success); font-weight: 600; border: 1px solid #dcfce7; }
+        .btn-export-excel:hover { background: #dcfce7; color: #15803d; }
 
-        /* Panel Principal de la Obra */
+        /* Panel Principal */
         #panel-gastos { 
-            display: none; 
-            background: var(--bg-card); 
-            border-radius: var(--radius-lg); 
-            padding: 30px; 
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border);
-            margin-top: 30px;
+            display: none; background: var(--bg-card); border-radius: var(--radius-lg); 
+            padding: 30px; box-shadow: var(--shadow-md); border: 1px solid var(--border); margin-top: 30px;
         }
+        .header-obra { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
 
-        .header-obra {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 20px; margin-bottom: 30px;
-        }
-
-        /* Etiquetas de estado y categorías (Estilo Píldora) */
-        .badge { 
-            padding: 4px 12px; 
-            border-radius: 99px; 
-            font-size: 0.75rem; 
-            font-weight: 600; 
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        /* Etiquetas */
+        .badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
         .estado-activa { background-color: #dcfce7; color: #166534; }
         .estado-terminada { background-color: #f1f5f9; color: #475569; }
-        
         .cat-materiales { background-color: #fef3c7; color: #92400e; }
         .cat-mano-obra { background-color: #e0e7ff; color: #3730a3; }
         .cat-extras { background-color: #f3f4f6; color: #374151; }
 
-        /* Tabla limpia */
+        /* Tabla */
         .tabla-contenedor { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-        th { 
-            padding: 16px; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            color: var(--text-muted); 
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-        }
+        th { padding: 16px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); font-weight: 600; }
         td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background-color: #f8fafc; }
-        
         .td-precio { font-weight: 600; font-variant-numeric: tabular-nums; }
         .td-usd { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-        .totales-footer {
-            display: flex; justify-content: flex-end; gap: 40px;
-            margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);
-        }
+        .totales-footer { display: flex; justify-content: flex-end; gap: 40px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
         .total-box { text-align: right; }
         .total-box span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
         .total-box strong { font-size: 1.5rem; color: var(--primary); font-variant-numeric: tabular-nums; }
 
         .grafico-container { position: relative; height: 250px; width: 100%; margin: 30px 0; }
         
-        /* Controles utilitarios */
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .select-sutil { width: auto; padding: 8px 12px; font-size: 0.85rem; border: none; background: #f1f5f9; cursor: pointer; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .toolbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .select-sutil { width: auto; padding: 8px 12px; font-size: 0.85rem; border: none; background: #f1f5f9; cursor: pointer; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -293,12 +229,16 @@
 
         <div class="toolbar">
             <h3>Registro de gastos</h3>
-            <select id="orden-gastos" class="select-sutil">
-                <option value="fecha_desc">Más recientes</option>
-                <option value="fecha_asc">Más antiguos</option>
-                <option value="valor_desc">Mayor valor</option>
-                <option value="valor_asc">Menor valor</option>
-            </select>
+            <div class="toolbar-actions">
+                <button id="btn-exportar-pdf" class="btn-text btn-export-pdf">↓ Descargar PDF</button>
+                <button id="btn-exportar-excel" class="btn-text btn-export-excel">↓ Descargar Excel</button>
+                <select id="orden-gastos" class="select-sutil">
+                    <option value="fecha_desc">Más recientes</option>
+                    <option value="fecha_asc">Más antiguos</option>
+                    <option value="valor_desc">Mayor valor</option>
+                    <option value="valor_asc">Menor valor</option>
+                </select>
+            </div>
         </div>
 
         <div class="tabla-contenedor">
@@ -354,10 +294,10 @@
     let unsubscribeGastos = null;
     let chartInstance = null; 
     let gastosActualesEnMemoria = [];
+    let gastosVisuales = []; // Array que guarda los gastos en el orden en que los ve el usuario para exportarlos igual
     let obrasMemoria = {}; 
     let tasaDolarOficial = 1000; 
 
-    // DOM
     const selectObra = document.getElementById('select-obra');
     const panelGastos = document.getElementById('panel-gastos');
     const tituloObraActiva = document.getElementById('titulo-obra-activa');
@@ -576,7 +516,8 @@
         const gastosPorFecha = {}; 
 
         const orden = selectOrden.value;
-        let gastosOrdenados = [...gastosActualesEnMemoria].sort((a, b) => {
+        // Guardamos el ordenamiento en gastosVisuales para que la exportación respete lo que ve el usuario
+        gastosVisuales = [...gastosActualesEnMemoria].sort((a, b) => {
             if (orden === 'fecha_desc') return b.tiempoReal - a.tiempoReal;
             if (orden === 'fecha_asc') return a.tiempoReal - b.tiempoReal;
             if (orden === 'valor_desc') return b.precio - a.precio;
@@ -586,7 +527,7 @@
 
         const esTerminada = datosObraActiva && datosObraActiva.estado === 'terminada';
 
-        if (gastosOrdenados.length === 0) {
+        if (gastosVisuales.length === 0) {
             const colSpan = esTerminada ? "5" : "6";
             listaGastos.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color: #64748b; padding: 30px;">Aún no hay gastos registrados.</td></tr>`;
             spanTotalArs.textContent = '0.00';
@@ -595,7 +536,7 @@
             return;
         }
 
-        gastosOrdenados.forEach((gasto) => {
+        gastosVisuales.forEach((gasto) => {
             totalArs += gasto.precio;
             let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; 
             totalUsd += usdGasto;
@@ -643,11 +584,8 @@
 
         const ctx = document.getElementById('graficoGastos').getContext('2d');
         if (chartInstance) chartInstance.destroy();
-
-        // Si no hay datos, no dibujamos el canvas
         if(valores.length === 0) return;
 
-        // Gradiente elegante para el gráfico
         let gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');   
         gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
@@ -657,45 +595,16 @@
             data: {
                 labels: fechasOrdenadas,
                 datasets: [{
-                    label: 'Inversión Diaria ($)',
-                    data: valores, 
-                    borderColor: '#2563eb', 
-                    backgroundColor: gradient,
-                    borderWidth: 2, 
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#2563eb',
-                    pointBorderWidth: 2,
-                    pointRadius: 4, 
-                    pointHoverRadius: 6,
-                    fill: true, 
-                    tension: 0.4
+                    label: 'Inversión Diaria ($)', data: valores, borderColor: '#2563eb', 
+                    backgroundColor: gradient, borderWidth: 2, pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#2563eb', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6,
+                    fill: true, tension: 0.4
                 }]
             },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#0f172a',
-                        padding: 12,
-                        cornerRadius: 8,
-                        titleFont: { size: 13 },
-                        bodyFont: { size: 14, weight: 'bold' },
-                        displayColors: false
-                    }
-                },
-                scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        grid: { color: '#f1f5f9', drawBorder: false },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false }
-                    }
-                } 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', padding: 12, cornerRadius: 8, titleFont: { size: 13 }, bodyFont: { size: 14, weight: 'bold' }, displayColors: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, border: { display: false } }, x: { grid: { display: false }, border: { display: false } } } 
             }
         });
     }
@@ -769,6 +678,98 @@
             btnSubmitGasto.textContent = textoOriginal;
         }
     });
+
+    // === LÓGICA DE EXPORTACIÓN (PDF Y EXCEL) ===
+
+    document.getElementById('btn-exportar-pdf').addEventListener('click', () => {
+        if (!datosObraActiva || gastosVisuales.length === 0) return alert('No hay gastos registrados para exportar.');
+        
+        // Destructurar jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Título del PDF
+        doc.setFontSize(18);
+        doc.text(`Reporte de Inversión: ${datosObraActiva.nombre}`, 14, 22);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Fecha de exportación: ${new Date().toLocaleDateString('es-AR')}`, 14, 30);
+        
+        // Preparar las filas de la tabla (usando el orden visible actual)
+        const tableColumn = ["Fecha", "Categoría", "Descripción", "ARS ($)", "USD (U$D)"];
+        const tableRows = [];
+        
+        let totalArs = 0;
+        let totalUsd = 0;
+
+        gastosVisuales.forEach(gasto => {
+            const usdGasto = gasto.precio / gasto.cotizacionDolarGuardada;
+            totalArs += gasto.precio;
+            totalUsd += usdGasto;
+
+            const rowData = [
+                gasto.fechaStr,
+                gasto.categoria,
+                gasto.detalle,
+                gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
+                usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })
+            ];
+            tableRows.push(rowData);
+        });
+
+        // Crear la tabla con autoTable
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+            theme: 'striped',
+            headStyles: { fillColor: [15, 23, 42] }, // Color oscuro de tu paleta
+            styles: { fontSize: 10, cellPadding: 3 },
+            columnStyles: { 
+                3: { halign: 'right' }, 
+                4: { halign: 'right' } 
+            }
+        });
+
+        // Agregar fila de totales al final del PDF
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`Total ARS: $${totalArs.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 14, finalY);
+        doc.text(`Total USD: U$D ${totalUsd.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 14, finalY + 7);
+
+        // Guardar archivo
+        doc.save(`Reporte_${datosObraActiva.nombre.replace(/\s+/g, '_')}.pdf`);
+    });
+
+    document.getElementById('btn-exportar-excel').addEventListener('click', () => {
+        if (!datosObraActiva || gastosVisuales.length === 0) return alert('No hay gastos registrados para exportar.');
+        
+        // Preparar datos para SheetJS
+        const datosExcel = gastosVisuales.map(gasto => {
+            const usdGasto = gasto.precio / gasto.cotizacionDolarGuardada;
+            return {
+                "Fecha": gasto.fechaStr,
+                "Categoría": gasto.categoria,
+                "Descripción": gasto.detalle,
+                "Monto ARS ($)": gasto.precio,
+                "Monto USD (U$D)": parseFloat(usdGasto.toFixed(2)) // Redondear para Excel
+            };
+        });
+
+        // Crear libro y hoja
+        const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Gastos de Obra");
+        
+        // Ajustar ancho de columnas para que se vea bien en Excel
+        const colWidths = [ { wch: 12 }, { wch: 15 }, { wch: 35 }, { wch: 15 }, { wch: 15 } ];
+        worksheet['!cols'] = colWidths;
+
+        // Descargar el archivo .xlsx
+        XLSX.writeFile(workbook, `Gastos_${datosObraActiva.nombre.replace(/\s+/g, '_')}.xlsx`);
+    });
+
 </script>
 
 </body>
