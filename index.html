@@ -50,7 +50,8 @@
         label { display: block; margin-bottom: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
         input, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background-color: var(--bg-page); font-family: inherit; font-size: 0.95rem; color: var(--text-main); transition: all 0.2s ease; box-sizing: border-box; }
         input:focus, select:focus { outline: none; border-color: var(--accent); background-color: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .form-horizontal { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+        
+        .form-horizontal { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; width: 100%; }
         .form-horizontal .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
         
         .moneda-symbol { position: absolute; left: 14px; top: 34px; font-weight: 500; color: var(--text-muted); }
@@ -106,7 +107,7 @@
         .total-box span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
         .total-box strong { font-size: 1.5rem; color: var(--primary); font-variant-numeric: tabular-nums; }
 
-        .grafico-container { position: relative; height: 250px; width: 100%; margin: 30px 0; }
+        .grafico-container { position: relative; height: 250px; width: 100%; margin: 10px 0; }
         
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .toolbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -160,64 +161,78 @@
             </div>
         </div>
 
-        <div id="seccion-formulario-gastos" style="background: var(--bg-page); padding: 24px; border-radius: var(--radius-md); margin-bottom: 40px;">
-            <form id="form-gasto" class="form-horizontal">
+        <div id="seccion-formulario-gastos" style="background: var(--bg-page); padding: 24px; border-radius: var(--radius-md); margin-bottom: 30px;">
+            <form id="form-gasto" style="display: flex; flex-direction: column; gap: 16px;">
                 <input type="hidden" id="id-gasto-editando" value="">
                 
-                <div class="form-group" style="flex: 1;">
-                    <label for="categoria-gasto">Rubro</label>
-                    <select id="categoria-gasto" required>
-                        <option value="Albañilería">Albañilería</option>
-                        <option value="Instalaciones">Instalaciones</option>
-                        <option value="Pintura">Pintura</option>
-                        <option value="Carpintería">Carpintería</option>
-                        <option value="Amoblamiento">Amoblamiento</option>
-                        <option value="Áridos">Áridos</option>
-                        <option value="Hormigón Elaborado">Hormigón Elaborado</option>
-                        <option value="Servicios">Servicios</option>
-                        <option value="Honorarios">Honorarios</option>
-                        <option value="Varios">Varios</option>
-                        <option value="Impuestos">Impuestos</option>
-                    </select>
+                <div class="form-horizontal">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="fecha-gasto">Fecha</label>
+                        <input type="date" id="fecha-gasto" required>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1.5;">
+                        <label for="categoria-gasto">Rubro</label>
+                        <select id="categoria-gasto" required>
+                            <option value="Albañilería">Albañilería</option>
+                            <option value="Instalaciones">Instalaciones</option>
+                            <option value="Pintura">Pintura</option>
+                            <option value="Carpintería">Carpintería</option>
+                            <option value="Amoblamiento">Amoblamiento</option>
+                            <option value="Áridos">Áridos</option>
+                            <option value="Hormigón Elaborado">Hormigón Elaborado</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Honorarios">Honorarios</option>
+                            <option value="Varios">Varios</option>
+                            <option value="Impuestos">Impuestos</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label for="tipo-gasto">Tipo</label>
+                        <select id="tipo-gasto" required>
+                            <option value="Material">Material</option>
+                            <option value="Mano de Obra">Mano de Obra</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="form-group" style="flex: 0.8;">
-                    <label for="tipo-gasto">Tipo</label>
-                    <select id="tipo-gasto" required>
-                        <option value="Material">Material</option>
-                        <option value="Mano de Obra">Mano de Obra</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" style="flex: 1;">
-                    <label for="precio-gasto-ars">ARS</label>
-                    <span class="moneda-symbol">$</span>
-                    <input type="text" id="precio-gasto-ars" class="input-moneda" required placeholder="0,00">
-                </div>
-                
-                <div class="form-group" style="flex: 1;">
-                    <label for="precio-gasto-usd">USD <span id="info-cotizacion" class="cotizacion-info">...</span></label>
-                    <span class="moneda-symbol">U$D</span>
-                    <input type="text" id="precio-gasto-usd" class="input-moneda" required placeholder="0,00">
-                </div>
+                <div class="form-horizontal">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="precio-gasto-ars">ARS</label>
+                        <span class="moneda-symbol">$</span>
+                        <input type="text" id="precio-gasto-ars" class="input-moneda" required placeholder="0,00">
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label for="precio-gasto-usd">USD <span id="info-cotizacion" class="cotizacion-info">...</span></label>
+                        <span class="moneda-symbol">U$D</span>
+                        <input type="text" id="precio-gasto-usd" class="input-moneda" required placeholder="0,00">
+                    </div>
 
-                <div class="form-group" style="flex: 2;">
-                    <label for="detalle-gasto">Descripción</label>
-                    <input type="text" id="detalle-gasto" required placeholder="Ej. Ladrillos huecos">
+                    <div class="form-group" style="flex: 2.5;">
+                        <label for="detalle-gasto">Descripción</label>
+                        <input type="text" id="detalle-gasto" required placeholder="Ej. Ladrillos huecos">
+                    </div>
                 </div>
                 
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
                     <button type="submit" id="btn-submit-gasto" class="btn-submit">Agregar Gasto</button>
                     <button type="button" id="btn-cancelar-edicion" class="btn-text" style="display: none;">Cancelar</button>
                 </div>
             </form>
         </div>
 
-        <div class="grafico-container">
-            <canvas id="graficoGastos"></canvas>
-        </div>
+        <details>
+            <summary>Ver Evolución de Inversión (Gráfico)</summary>
+            <div class="accordion-content">
+                <div class="grafico-container">
+                    <canvas id="graficoGastos"></canvas>
+                </div>
+            </div>
+        </details>
 
-        <div class="toolbar">
+        <div class="toolbar" style="margin-top: 30px;">
             <h3>Registro de gastos</h3>
             <div class="toolbar-actions">
                 <button id="btn-exportar-pdf" class="btn-text btn-export-pdf">↓ Descargar PDF</button>
@@ -308,6 +323,7 @@
     const tituloObraActiva = document.getElementById('titulo-obra-activa');
     const formGasto = document.getElementById('form-gasto');
     const btnCrearObra = document.getElementById('btn-crear-obra');
+    const inputFecha = document.getElementById('fecha-gasto'); // Nuevo DOM
     const inputArs = document.getElementById('precio-gasto-ars');
     const inputUsd = document.getElementById('precio-gasto-usd');
     const selectOrden = document.getElementById('orden-gastos');
@@ -324,6 +340,15 @@
 
     Chart.defaults.font.family = "'Inter', sans-serif";
     Chart.defaults.color = '#64748b';
+
+    // Obtener la fecha local actual en formato YYYY-MM-DD
+    function getTodayYYYYMMDD() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
 
     async function obtenerCotizacionDolar() {
         try {
@@ -499,8 +524,7 @@
         unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
             gastosActualesEnMemoria = snapshot.docs.map(doc => ({
                 id: doc.id,
-                ...doc.data(),
-                tiempoReal: doc.data().timestamp ? doc.data().timestamp.toMillis() : Date.now() 
+                ...doc.data()
             }));
             renderizarTablaYGrafico();
         });
@@ -520,8 +544,12 @@
 
         const orden = selectOrden.value;
         gastosVisuales = [...gastosActualesEnMemoria].sort((a, b) => {
-            if (orden === 'fecha_desc') return b.tiempoReal - a.tiempoReal;
-            if (orden === 'fecha_asc') return a.tiempoReal - b.tiempoReal;
+            // Lógica para ordenar por la fecha ingresada por el usuario (YYYY-MM-DD)
+            let dateA = a.fechaIso || (a.fechaStr ? a.fechaStr.split('/').reverse().join('-') : '1970-01-01');
+            let dateB = b.fechaIso || (b.fechaStr ? b.fechaStr.split('/').reverse().join('-') : '1970-01-01');
+            
+            if (orden === 'fecha_desc') return dateB.localeCompare(dateA);
+            if (orden === 'fecha_asc') return dateA.localeCompare(dateB);
             if (orden === 'valor_desc') return b.precio - a.precio;
             if (orden === 'valor_asc') return a.precio - b.precio;
             if (orden === 'categoria_asc') return a.categoria.localeCompare(b.categoria);
@@ -546,9 +574,10 @@
             totalUsd += usdGasto;
             
             let claseCat = coloresCategorias[gasto.categoria] || 'cat-varios';
-            // Valor por defecto en caso de registros viejos
             let tipoGasto = gasto.tipo || 'Material';
 
+            // Respaldo por si no tiene fechaIso guardada (datos viejos)
+            let isoF = gasto.fechaIso || gasto.fechaStr.split('/').reverse().join('-');
             const detSeguro = gasto.detalle.replace(/'/g, "\\'");
 
             const tr = document.createElement('tr');
@@ -564,7 +593,7 @@
 
             if (!esTerminada) {
                 htmlFila += `<td style="text-align: right;">
-                    <button type="button" class="btn-text" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', '${tipoGasto}', ${gasto.precio}, ${usdGasto}, '${detSeguro}')">Editar</button>
+                    <button type="button" class="btn-text" onclick="window.prepararEdicion('${gasto.id}', '${isoF}', '${gasto.categoria}', '${tipoGasto}', ${gasto.precio}, ${usdGasto}, '${detSeguro}')">Editar</button>
                 </td>`;
             }
 
@@ -615,8 +644,9 @@
         });
     }
 
-    window.prepararEdicion = function(id, categoria, tipo, precioArs, precioUsd, detalle) {
+    window.prepararEdicion = function(id, fechaIso, categoria, tipo, precioArs, precioUsd, detalle) {
         inputIdEditando.value = id;
+        document.getElementById('fecha-gasto').value = fechaIso;
         document.getElementById('categoria-gasto').value = categoria;
         document.getElementById('tipo-gasto').value = tipo;
         inputArs.value = formatearConPuntos(precioArs);
@@ -633,6 +663,8 @@
     function resetearFormulario() {
         formGasto.reset();
         inputIdEditando.value = '';
+        inputFecha.value = getTodayYYYYMMDD(); // Setea a HOY por defecto
+        
         const btnSubmit = document.getElementById('btn-submit-gasto');
         btnSubmit.textContent = 'Agregar Gasto';
         btnSubmit.style.backgroundColor = 'var(--accent)';
@@ -653,11 +685,18 @@
         let precioUsdLimpio = limpiarNumero(inputUsd.value);
         let cotizacionGuardada = precioArsLimpio / precioUsdLimpio; 
 
+        // Capturamos y formateamos la fecha ingresada
+        let fechaIsoIngresada = inputFecha.value; // "YYYY-MM-DD"
+        let [year, month, day] = fechaIsoIngresada.split('-');
+        let fechaStringLocal = `${day}/${month}/${year}`;
+
         const idEditando = inputIdEditando.value;
 
         try {
             if (idEditando) {
                 await updateDoc(doc(db, "gastos", idEditando), {
+                    fechaIso: fechaIsoIngresada,
+                    fechaStr: fechaStringLocal,
                     categoria: document.getElementById('categoria-gasto').value,
                     tipo: document.getElementById('tipo-gasto').value,
                     precio: precioArsLimpio,
@@ -665,17 +704,15 @@
                     detalle: document.getElementById('detalle-gasto').value.trim()
                 });
             } else {
-                const fechaActual = new Date().toLocaleDateString('es-AR', {
-                    day: '2-digit', month: '2-digit', year: 'numeric'
-                });
                 await addDoc(collection(db, "gastos"), {
                     obraId: obraActivaId,
+                    fechaIso: fechaIsoIngresada,
+                    fechaStr: fechaStringLocal,
                     categoria: document.getElementById('categoria-gasto').value,
                     tipo: document.getElementById('tipo-gasto').value,
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim(),
-                    fechaStr: fechaActual,
                     timestamp: serverTimestamp() 
                 });
             }
@@ -697,7 +734,6 @@
         doc.setTextColor(100);
         doc.text(`Fecha de exportación: ${new Date().toLocaleDateString('es-AR')}`, 14, 30);
         
-        // Se agrega la columna TIPO al PDF
         const tableColumn = ["Fecha", "Rubro", "Tipo", "Descripción", "ARS ($)", "USD (U$D)"];
         const tableRows = [];
         let totalArs = 0; let totalUsd = 0;
