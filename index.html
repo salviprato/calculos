@@ -3,180 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Gastos por Obra</title>
+    <title>Gestión de Gastos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         :root {
-            --primary: #3498db;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --bg: #f4f7f6;
-            --border: #ddd;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #0f172a;
+            --primary-hover: #334155;
+            --accent: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
         }
+
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        h1, h2, h3 { color: var(--dark); margin-top: 0; }
-        
+
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.02em; }
+        h2 { font-size: 1.25rem; font-weight: 600; margin: 0; }
+        h3 { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 15px; }
+
+        /* Acordeones limpios */
         details {
-            background: #fdfdfd;
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            overflow: hidden;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s;
         }
+        details:hover { box-shadow: var(--shadow-md); }
+        
         summary {
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            font-weight: bold;
-            font-size: 1.1em;
+            padding: 20px 24px;
+            font-weight: 600;
+            font-size: 1.05rem;
             cursor: pointer;
             list-style: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: var(--text-main);
         }
         summary::-webkit-details-marker { display: none; }
-        summary::after { content: '▼'; font-size: 0.8em; color: var(--dark); }
-        details[open] summary::after { content: '▲'; }
+        summary::after { content: '+'; font-size: 1.2rem; font-weight: 400; color: var(--text-muted); }
+        details[open] summary::after { content: '−'; }
+        
         .accordion-content {
-            padding: 20px;
-            border-top: 1px solid var(--border);
+            padding: 0 24px 24px 24px;
         }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-        .section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        /* Formularios minimalistas */
+        .form-group { margin-bottom: 16px; position: relative; }
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: var(--text-muted); 
         }
-        
-        .form-horizontal { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
-        .form-horizontal .form-group { flex: 1; min-width: 150px; margin-bottom: 0; }
-        .form-horizontal button { width: auto; padding: 10px 25px; }
-
-        .form-group { margin-bottom: 15px; position: relative; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #555; }
         input, select {
-            width: 100%; padding: 10px; border: 1px solid #ccc;
-            border-radius: 5px; box-sizing: border-box; font-family: inherit;
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-page);
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
         }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-horizontal { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+        .form-horizontal .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
         
-        .moneda-symbol { position: absolute; left: 10px; top: 33px; font-weight: bold; color: #7f8c8d; }
-        .input-moneda { padding-left: 25px; }
-        
+        .moneda-symbol { position: absolute; left: 14px; top: 34px; font-weight: 500; color: var(--text-muted); }
+        .input-moneda { padding-left: 35px; }
+        .cotizacion-info { position: absolute; font-size: 0.7rem; color: var(--text-muted); right: 0; top: 0; }
+
+        /* Botones elegantes */
         button {
-            background-color: var(--primary); color: white; border: none;
-            padding: 10px 20px; border-radius: 5px; cursor: pointer;
-            font-weight: bold; transition: background 0.3s;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            font-family: inherit;
         }
-        button:hover { filter: brightness(0.9); }
-        .btn-success { background-color: var(--success); }
-        .btn-warning { background-color: var(--warning); padding: 5px 10px; font-size: 0.8em;}
-        .btn-danger { background-color: var(--danger); }
-        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background-color: var(--primary); color: white; }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
         
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: var(--dark); }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; color: white; }
-        .bg-activa { background-color: var(--success); }
-        .bg-terminada { background-color: #7f8c8d; }
-        .bg-materiales { background-color: #e67e22; }
-        .bg-mano-obra { background-color: #9b59b6; }
-        .bg-extras { background-color: #95a5a6; }
+        .btn-crear { background-color: var(--primary); width: 100%; }
+        .btn-submit { background-color: var(--accent); white-space: nowrap; }
+        .btn-submit:hover { background-color: #1d4ed8; }
         
-        #panel-gastos { display: none; }
-        .grafico-container { position: relative; height: 300px; width: 100%; }
-        .cotizacion-info { font-size: 0.75em; color: #7f8c8d; margin-top: 4px; display: block; }
-        .controles-tabla { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .btn-text { background: none; color: var(--text-muted); padding: 8px 12px; font-size: 0.85rem; }
+        .btn-text:hover { background: #f1f5f9; color: var(--text-main); transform: none; }
         
+        .btn-danger-text { background: none; color: var(--danger); opacity: 0.7; padding: 8px 16px; }
+        .btn-danger-text:hover { background: #fee2e2; opacity: 1; transform: none; }
+
+        /* Panel Principal de la Obra */
+        #panel-gastos { 
+            display: none; 
+            background: var(--bg-card); 
+            border-radius: var(--radius-lg); 
+            padding: 30px; 
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            margin-top: 30px;
+        }
+
         .header-obra {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;
-            flex-wrap: wrap; gap: 10px;
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 20px; margin-bottom: 30px;
         }
-        .etiqueta-estado { font-size: 0.5em; vertical-align: middle; margin-left: 10px; }
+
+        /* Etiquetas de estado y categorías (Estilo Píldora) */
+        .badge { 
+            padding: 4px 12px; 
+            border-radius: 99px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .estado-activa { background-color: #dcfce7; color: #166534; }
+        .estado-terminada { background-color: #f1f5f9; color: #475569; }
+        
+        .cat-materiales { background-color: #fef3c7; color: #92400e; }
+        .cat-mano-obra { background-color: #e0e7ff; color: #3730a3; }
+        .cat-extras { background-color: #f3f4f6; color: #374151; }
+
+        /* Tabla limpia */
+        .tabla-contenedor { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { 
+            padding: 16px; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            color: var(--text-muted); 
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+        td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+        
+        .td-precio { font-weight: 600; font-variant-numeric: tabular-nums; }
+        .td-usd { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+        .totales-footer {
+            display: flex; justify-content: flex-end; gap: 40px;
+            margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);
+        }
+        .total-box { text-align: right; }
+        .total-box span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+        .total-box strong { font-size: 1.5rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+
+        .grafico-container { position: relative; height: 250px; width: 100%; margin: 30px 0; }
+        
+        /* Controles utilitarios */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .select-sutil { width: auto; padding: 8px 12px; font-size: 0.85rem; border: none; background: #f1f5f9; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Panel de Control de Obras</h1>
+    <h1>Tus Obras</h1>
 
     <details open id="acordeon-activas">
-        <summary>Obras Activas (Crear y Seleccionar)</summary>
+        <summary>En curso</summary>
         <div class="accordion-content grid-2">
             <div>
-                <label for="nombre-obra">Nueva Obra</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="nombre-obra" placeholder="Nombre de la obra">
-                    <button id="btn-crear-obra">Crear</button>
-                </div>
+                <label for="select-obra">Seleccionar Obra</label>
+                <select id="select-obra">
+                    <option value="">Buscar obra activa...</option>
+                </select>
             </div>
             <div>
-                <label for="select-obra">Seleccionar Obra en Curso</label>
-                <select id="select-obra">
-                    <option value="">-- Seleccioná una obra --</option>
-                </select>
+                <label for="nombre-obra">Crear Nueva Obra</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="nombre-obra" placeholder="Nombre del proyecto">
+                    <button id="btn-crear-obra" class="btn-crear">Crear</button>
+                </div>
             </div>
         </div>
     </details>
 
     <details id="acordeon-historial">
-        <summary>Historial de Obras Terminadas</summary>
-        <div class="accordion-content">
-            <div style="overflow-x: auto;">
-                <table id="tabla-obras-terminadas">
-                    <thead>
-                        <tr>
-                            <th>Nombre de la Obra</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-obras-terminadas">
-                        </tbody>
-                </table>
-            </div>
+        <summary>Historial (Terminadas)</summary>
+        <div class="accordion-content tabla-contenedor" style="margin-top: -10px;">
+            <table>
+                <tbody id="lista-obras-terminadas">
+                    </tbody>
+            </table>
         </div>
     </details>
 
     <div id="panel-gastos">
         <div class="header-obra">
-            <h2 style="margin: 0;">
-                <span id="titulo-obra-activa" style="color: var(--primary);"></span>
-                <span id="badge-estado-obra" class="badge bg-activa etiqueta-estado">ACTIVA</span>
-            </h2>
-            <div style="display: flex; gap: 10px;">
-                <button id="btn-restaurar-obra" class="btn-outline" style="display: none;">Restaurar Obra</button>
-                <button id="btn-terminar-obra" class="btn-warning" style="font-size: 1em; padding: 10px 20px;">Terminar Obra</button>
-                <button id="btn-borrar-obra" class="btn-danger">Borrar Obra</button>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <h2 id="titulo-obra-activa"></h2>
+                <span id="badge-estado-obra" class="badge"></span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-restaurar-obra" class="btn-text" style="display: none;">Restaurar</button>
+                <button id="btn-terminar-obra" class="btn-text">Marcar como terminada</button>
+                <button id="btn-borrar-obra" class="btn-danger-text">Eliminar</button>
             </div>
         </div>
 
-        <div class="section" id="seccion-formulario-gastos">
+        <div id="seccion-formulario-gastos" style="background: var(--bg-page); padding: 24px; border-radius: var(--radius-md); margin-bottom: 40px;">
             <form id="form-gasto" class="form-horizontal">
                 <input type="hidden" id="id-gasto-editando" value="">
                 
-                <div class="form-group" style="flex: 1.5;">
+                <div class="form-group" style="flex: 1;">
                     <label for="categoria-gasto">Categoría</label>
                     <select id="categoria-gasto" required>
                         <option value="Materiales">Materiales</option>
@@ -185,79 +263,70 @@
                     </select>
                 </div>
                 
-                <div class="form-group" style="flex: 1.5;">
-                    <label for="precio-gasto-ars">Precio (ARS)</label>
+                <div class="form-group" style="flex: 1;">
+                    <label for="precio-gasto-ars">ARS</label>
                     <span class="moneda-symbol">$</span>
-                    <input type="text" id="precio-gasto-ars" class="input-moneda" required placeholder="0.00">
+                    <input type="text" id="precio-gasto-ars" class="input-moneda" required placeholder="0,00">
                 </div>
                 
-                <div class="form-group" style="flex: 1.5;">
-                    <label for="precio-gasto-usd">Precio (USD Oficial)</label>
+                <div class="form-group" style="flex: 1;">
+                    <label for="precio-gasto-usd">USD <span id="info-cotizacion" class="cotizacion-info">...</span></label>
                     <span class="moneda-symbol">U$D</span>
-                    <input type="text" id="precio-gasto-usd" class="input-moneda" required placeholder="0.00">
-                    <small id="info-cotizacion" class="cotizacion-info">Cargando dólar...</small>
+                    <input type="text" id="precio-gasto-usd" class="input-moneda" required placeholder="0,00">
                 </div>
 
                 <div class="form-group" style="flex: 2;">
-                    <label for="detalle-gasto">Detalle</label>
-                    <input type="text" id="detalle-gasto" required placeholder="Ej: Cemento">
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label for="extra-gasto">Extra</label>
-                    <input type="text" id="extra-gasto" placeholder="Opcional">
+                    <label for="detalle-gasto">Descripción</label>
+                    <input type="text" id="detalle-gasto" required placeholder="Ej. Cemento Portland">
                 </div>
                 
-                <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                    <button type="submit" id="btn-submit-gasto" class="btn-success">Cargar Gasto</button>
-                    <button type="button" id="btn-cancelar-edicion" style="display: none; background: #95a5a6;">Cancelar</button>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button type="submit" id="btn-submit-gasto" class="btn-submit">Agregar Gasto</button>
+                    <button type="button" id="btn-cancelar-edicion" class="btn-text" style="display: none;">Cancelar</button>
                 </div>
             </form>
         </div>
 
-        <details>
-            <summary>Evolución de Gastos en el Tiempo (Ver Gráfico)</summary>
-            <div class="accordion-content">
-                <div class="grafico-container">
-                    <canvas id="graficoGastos"></canvas>
-                </div>
-            </div>
-        </details>
+        <div class="grafico-container">
+            <canvas id="graficoGastos"></canvas>
+        </div>
 
-        <div class="section" style="padding: 0; border: none; background: transparent;">
-            <div class="controles-tabla">
-                <h3 style="margin: 0;">Historial de Gastos</h3>
-                <div>
-                    <label for="orden-gastos" style="display: inline-block; margin-right: 10px;">Ordenar por:</label>
-                    <select id="orden-gastos" style="width: auto; display: inline-block;">
-                        <option value="fecha_desc">Fecha (Más nuevos primero)</option>
-                        <option value="fecha_asc">Fecha (Más viejos primero)</option>
-                        <option value="valor_desc">Mayor Precio</option>
-                        <option value="valor_asc">Menor Precio</option>
-                        <option value="categoria_asc">Categoría (A - Z)</option>
-                    </select>
-                </div>
-            </div>
+        <div class="toolbar">
+            <h3>Registro de gastos</h3>
+            <select id="orden-gastos" class="select-sutil">
+                <option value="fecha_desc">Más recientes</option>
+                <option value="fecha_asc">Más antiguos</option>
+                <option value="valor_desc">Mayor valor</option>
+                <option value="valor_asc">Menor valor</option>
+            </select>
+        </div>
 
-            <div style="background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Categoría</th>
-                            <th>Detalle</th>
-                            <th>Extra</th>
-                            <th>ARS ($)</th>
-                            <th>USD (U$D)</th>
-                            <th id="columna-acciones">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-gastos">
-                        </tbody>
-                </table>
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>ARS</th>
+                        <th>USD</th>
+                        <th id="columna-acciones" style="text-align: right;"></th>
+                    </tr>
+                </thead>
+                <tbody id="lista-gastos">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="totales-footer">
+            <div class="total-box">
+                <span>Inversión Total (USD)</span>
+                <strong style="color: var(--text-muted);">U$D <span id="total-gastos-usd">0.00</span></strong>
             </div>
-            <h3 style="text-align: right; margin-top: 15px; font-size: 1.5em;">
-                Total Obra: $<span id="total-gastos-ars">0.00</span> | U$D <span id="total-gastos-usd">0.00</span>
-            </h3>
+            <div class="total-box">
+                <span>Inversión Total (ARS)</span>
+                <strong>$<span id="total-gastos-ars">0.00</span></strong>
+            </div>
         </div>
     </div>
 </div>
@@ -281,15 +350,14 @@
     const db = getFirestore(app);
 
     let obraActivaId = null;
-    let datosObraActiva = null; // Guardamos los datos de la obra seleccionada
+    let datosObraActiva = null; 
     let unsubscribeGastos = null;
     let chartInstance = null; 
     let gastosActualesEnMemoria = [];
-    let obrasMemoria = {}; // Para tener los datos de todas las obras a mano
-
+    let obrasMemoria = {}; 
     let tasaDolarOficial = 1000; 
 
-    // Referencias DOM
+    // DOM
     const selectObra = document.getElementById('select-obra');
     const panelGastos = document.getElementById('panel-gastos');
     const tituloObraActiva = document.getElementById('titulo-obra-activa');
@@ -309,15 +377,17 @@
     const badgeEstadoObra = document.getElementById('badge-estado-obra');
     const columnaAcciones = document.getElementById('columna-acciones');
 
-    // === LÓGICA DE DÓLAR Y FORMATEO ===
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b';
+
     async function obtenerCotizacionDolar() {
         try {
             const respuesta = await fetch('https://dolarapi.com/v1/dolares/oficial');
             const data = await respuesta.json();
             tasaDolarOficial = data.venta;
-            document.getElementById('info-cotizacion').textContent = `Cotización: $${tasaDolarOficial}`;
+            document.getElementById('info-cotizacion').textContent = `Ref: $${tasaDolarOficial}`;
         } catch (error) {
-            document.getElementById('info-cotizacion').textContent = `Cotización manual: $${tasaDolarOficial}`;
+            document.getElementById('info-cotizacion').textContent = `Ref: $${tasaDolarOficial}`;
         }
     }
     obtenerCotizacionDolar();
@@ -345,13 +415,12 @@
         inputArs.value = formatearConPuntos(limpiarNumero(this.value) * tasaDolarOficial);
     });
 
-    // 1. Escuchar Obras (Activas y Terminadas)
     const qObras = query(collection(db, "obras"), orderBy("fechaCreacion", "desc"));
     onSnapshot(qObras, (snapshot) => {
         const valorActualSelect = selectObra.value;
-        selectObra.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
+        selectObra.innerHTML = '<option value="">Buscar obra activa...</option>';
         listaObrasTerminadas.innerHTML = '';
-        obrasMemoria = {}; // Limpiamos memoria
+        obrasMemoria = {}; 
 
         let hayTerminadas = false;
 
@@ -360,7 +429,6 @@
             const id = docSnap.id;
             obrasMemoria[id] = obra;
 
-            // Por defecto, si no tiene estado, es activa
             const estado = obra.estado || 'activa'; 
 
             if (estado === 'activa') {
@@ -372,34 +440,31 @@
                 hayTerminadas = true;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${obra.nombre}</strong></td>
-                    <td><span class="badge bg-terminada">Terminada</span></td>
-                    <td><button class="btn-outline" style="padding: 5px 10px;" onclick="window.cargarObraDesdeHistorial('${id}')">Ver Gastos</button></td>
+                    <td style="width: 70%;"><strong>${obra.nombre}</strong></td>
+                    <td style="text-align: right;"><button class="btn-text" onclick="window.cargarObraDesdeHistorial('${id}')">Ver detalles →</button></td>
                 `;
                 listaObrasTerminadas.appendChild(tr);
             }
         });
 
         if (!hayTerminadas) {
-            listaObrasTerminadas.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay obras terminadas.</td></tr>';
+            listaObrasTerminadas.innerHTML = '<tr><td colspan="2" style="text-align:center; color: #64748b;">No hay obras en el historial.</td></tr>';
         }
 
         if (valorActualSelect && obrasMemoria[valorActualSelect]?.estado !== 'terminada') {
             selectObra.value = valorActualSelect;
         } else if (valorActualSelect) {
-            // Si la obra que estaba seleccionada acaba de ser terminada, la deseleccionamos del dropdown
             selectObra.value = ""; 
         }
     });
 
-    // 2. Crear Obra
     btnCrearObra.addEventListener('click', async () => {
         const nombreInput = document.getElementById('nombre-obra');
-        if (!nombreInput.value.trim()) return alert("Ingresá un nombre.");
+        if (!nombreInput.value.trim()) return;
         try {
             const docRef = await addDoc(collection(db, "obras"), {
                 nombre: nombreInput.value.trim(),
-                estado: 'activa', // Nuevo campo
+                estado: 'activa', 
                 fechaCreacion: serverTimestamp()
             });
             nombreInput.value = '';
@@ -409,7 +474,6 @@
         } catch (e) { console.error(e); }
     });
 
-    // 3. Seleccionar Obra (desde Select)
     selectObra.addEventListener('change', (e) => {
         const id = e.target.value;
         if (id) {
@@ -420,14 +484,12 @@
         }
     });
 
-    // Función global para abrir desde el historial
     window.cargarObraDesdeHistorial = function(id) {
-        selectObra.value = ""; // Limpia el select de activas
+        selectObra.value = ""; 
         cargarInterfazObra(id);
         document.getElementById('acordeon-historial').removeAttribute('open');
     };
 
-    // Función principal que prepara la UI según el estado de la obra
     function cargarInterfazObra(id) {
         obraActivaId = id;
         datosObraActiva = obrasMemoria[id];
@@ -437,77 +499,58 @@
         tituloObraActiva.textContent = datosObraActiva.nombre;
         panelGastos.style.display = 'block';
         
-        // Ajustar la Interfaz según el estado (Activa vs Terminada)
         if (datosObraActiva.estado === 'terminada') {
-            badgeEstadoObra.textContent = "TERMINADA";
-            badgeEstadoObra.className = "badge bg-terminada etiqueta-estado";
-            
-            seccionFormularioGastos.style.display = 'none'; // Oculta carga
-            columnaAcciones.style.display = 'none'; // Oculta columna Editar de tabla
-            
+            badgeEstadoObra.textContent = "Terminada";
+            badgeEstadoObra.className = "badge estado-terminada";
+            seccionFormularioGastos.style.display = 'none'; 
+            columnaAcciones.style.display = 'none'; 
             btnTerminarObra.style.display = 'none';
             btnRestaurarObra.style.display = 'inline-block';
         } else {
-            badgeEstadoObra.textContent = "ACTIVA";
-            badgeEstadoObra.className = "badge bg-activa etiqueta-estado";
-            
-            seccionFormularioGastos.style.display = 'block'; // Muestra carga
-            columnaAcciones.style.display = 'table-cell'; // Muestra columna
-            
+            badgeEstadoObra.textContent = "Activa";
+            badgeEstadoObra.className = "badge estado-activa";
+            seccionFormularioGastos.style.display = 'block'; 
+            columnaAcciones.style.display = 'table-cell'; 
             btnTerminarObra.style.display = 'inline-block';
             btnRestaurarObra.style.display = 'none';
         }
 
         resetearFormulario();
         escucharGastos(obraActivaId);
-        
-        // Scrollear al panel
         panelGastos.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- ACCIONES DE OBRA (TERMINAR, BORRAR, RESTAURAR) ---
-
     btnTerminarObra.addEventListener('click', async () => {
-        if(confirm("¿Estás seguro de terminar esta obra? Pasará al historial y no se podrán cargar más gastos.")){
+        if(confirm("¿Archivar esta obra? No se podrán cargar más gastos.")){
             await updateDoc(doc(db, "obras", obraActivaId), { estado: 'terminada' });
-            cargarInterfazObra(obraActivaId); // Recarga la UI en modo lectura
+            cargarInterfazObra(obraActivaId); 
             document.getElementById('acordeon-historial').setAttribute('open', '');
         }
     });
 
     btnRestaurarObra.addEventListener('click', async () => {
-        if(confirm("¿Querés volver a activar esta obra para cargarle más gastos?")){
-            await updateDoc(doc(db, "obras", obraActivaId), { estado: 'activa' });
-            selectObra.value = obraActivaId; // La vuelve a seleccionar en el desplegable
-            cargarInterfazObra(obraActivaId);
-        }
+        await updateDoc(doc(db, "obras", obraActivaId), { estado: 'activa' });
+        selectObra.value = obraActivaId; 
+        cargarInterfazObra(obraActivaId);
     });
 
     btnBorrarObra.addEventListener('click', async () => {
-        if(confirm("¡ATENCIÓN! Esto borrará la obra y TODOS sus gastos permanentemente. ¿Estás absolutamente seguro?")){
+        if(confirm("Se borrará la obra y todos sus gastos de forma permanente. ¿Confirmar?")){
             try {
-                // 1. Buscar y borrar todos los gastos asociados a la obra
                 const qBorrar = query(collection(db, "gastos"), where("obraId", "==", obraActivaId));
                 const snapshotBorrar = await getDocs(qBorrar);
                 snapshotBorrar.forEach(async (docGasto) => {
                     await deleteDoc(docGasto.ref);
                 });
-
-                // 2. Borrar la obra en sí
                 await deleteDoc(doc(db, "obras", obraActivaId));
-                
                 panelGastos.style.display = 'none';
                 obraActivaId = null;
-                alert("Obra y gastos eliminados correctamente.");
             } catch (error) {
                 console.error("Error al borrar:", error);
-                alert("Hubo un error al borrar la obra.");
             }
         }
     });
 
-
-    // 4. Escuchar Gastos
     function escucharGastos(obraId) {
         const qGastos = query(collection(db, "gastos"), where("obraId", "==", obraId));
         unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
@@ -520,7 +563,6 @@
         });
     }
 
-    // 5. Ordenar, Renderizar Tabla y Gráfico
     selectOrden.addEventListener('change', renderizarTablaYGrafico);
 
     function renderizarTablaYGrafico() {
@@ -539,16 +581,14 @@
             if (orden === 'fecha_asc') return a.tiempoReal - b.tiempoReal;
             if (orden === 'valor_desc') return b.precio - a.precio;
             if (orden === 'valor_asc') return a.precio - b.precio;
-            if (orden === 'categoria_asc') return a.categoria.localeCompare(b.categoria);
             return 0;
         });
 
-        // Verificamos si la obra está terminada para saber si dibujar la columna de botones
         const esTerminada = datosObraActiva && datosObraActiva.estado === 'terminada';
 
         if (gastosOrdenados.length === 0) {
-            const colSpan = esTerminada ? "6" : "7";
-            listaGastos.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">No hay gastos.</td></tr>`;
+            const colSpan = esTerminada ? "5" : "6";
+            listaGastos.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color: #64748b; padding: 30px;">Aún no hay gastos registrados.</td></tr>`;
             spanTotalArs.textContent = '0.00';
             spanTotalUsd.textContent = '0.00';
             actualizarGrafico({});
@@ -560,27 +600,24 @@
             let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; 
             totalUsd += usdGasto;
             
-            let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
-                             gasto.categoria === 'Mano de Obra' ? 'bg-mano-obra' : 'bg-extras';
+            let claseCat = gasto.categoria === 'Materiales' ? 'cat-materiales' : 
+                           gasto.categoria === 'Mano de Obra' ? 'cat-mano-obra' : 'cat-extras';
 
             const detSeguro = gasto.detalle.replace(/'/g, "\\'");
-            const extSeguro = (gasto.extra || '').replace(/'/g, "\\'");
 
             const tr = document.createElement('tr');
             
             let htmlFila = `
-                <td>${gasto.fechaStr}</td>
-                <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">${gasto.fechaStr}</td>
+                <td><span class="badge ${claseCat}">${gasto.categoria}</span></td>
                 <td>${gasto.detalle}</td>
-                <td>${gasto.extra || '-'}</td>
-                <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-                <td style="color: #27ae60; font-weight: bold;">U$D ${usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                <td class="td-precio">$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                <td class="td-usd">U$D ${usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
             `;
 
-            // Solo agregamos el botón de editar si la obra NO está terminada
             if (!esTerminada) {
-                htmlFila += `<td>
-                    <button type="button" class="btn-warning" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}', '${extSeguro}')">Editar</button>
+                htmlFila += `<td style="text-align: right;">
+                    <button type="button" class="btn-text" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}')">Editar</button>
                 </td>`;
             }
 
@@ -607,39 +644,82 @@
         const ctx = document.getElementById('graficoGastos').getContext('2d');
         if (chartInstance) chartInstance.destroy();
 
+        // Si no hay datos, no dibujamos el canvas
+        if(valores.length === 0) return;
+
+        // Gradiente elegante para el gráfico
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');   
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: fechasOrdenadas,
                 datasets: [{
-                    label: 'Gasto Total por Día (ARS $)',
-                    data: valores, borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 3, pointBackgroundColor: '#2c3e50', pointRadius: 4, fill: true, tension: 0.3
+                    label: 'Inversión Diaria ($)',
+                    data: valores, 
+                    borderColor: '#2563eb', 
+                    backgroundColor: gradient,
+                    borderWidth: 2, 
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#2563eb',
+                    pointBorderWidth: 2,
+                    pointRadius: 4, 
+                    pointHoverRadius: 6,
+                    fill: true, 
+                    tension: 0.4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 14, weight: 'bold' },
+                        displayColors: false
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#f1f5f9', drawBorder: false },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                } 
+            }
         });
     }
 
-    window.prepararEdicion = function(id, categoria, precioArs, precioUsd, detalle, extra) {
+    window.prepararEdicion = function(id, categoria, precioArs, precioUsd, detalle) {
         inputIdEditando.value = id;
         document.getElementById('categoria-gasto').value = categoria;
         inputArs.value = formatearConPuntos(precioArs);
         inputUsd.value = formatearConPuntos(precioUsd);
         document.getElementById('detalle-gasto').value = detalle;
-        document.getElementById('extra-gasto').value = extra;
 
-        btnSubmitGasto.textContent = 'Actualizar Gasto';
-        btnSubmitGasto.style.backgroundColor = '#f39c12';
+        const btnSubmit = document.getElementById('btn-submit-gasto');
+        btnSubmit.textContent = 'Guardar Cambios';
+        btnSubmit.style.backgroundColor = '#1e293b';
         btnCancelarEdicion.style.display = 'inline-block';
-        document.getElementById('form-gasto').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('seccion-formulario-gastos').scrollIntoView({ behavior: 'smooth' });
     };
 
     function resetearFormulario() {
         formGasto.reset();
         inputIdEditando.value = '';
-        btnSubmitGasto.textContent = 'Cargar Gasto';
-        btnSubmitGasto.style.backgroundColor = '#2ecc71';
+        const btnSubmit = document.getElementById('btn-submit-gasto');
+        btnSubmit.textContent = 'Agregar Gasto';
+        btnSubmit.style.backgroundColor = 'var(--accent)';
         btnCancelarEdicion.style.display = 'none';
     }
 
@@ -650,6 +730,7 @@
         if (!obraActivaId || datosObraActiva.estado === 'terminada') return;
 
         btnSubmitGasto.disabled = true;
+        const textoOriginal = btnSubmitGasto.textContent;
         btnSubmitGasto.textContent = 'Guardando...';
 
         let precioArsLimpio = limpiarNumero(inputArs.value);
@@ -664,8 +745,7 @@
                     categoria: document.getElementById('categoria-gasto').value,
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
-                    detalle: document.getElementById('detalle-gasto').value.trim(),
-                    extra: document.getElementById('extra-gasto').value.trim()
+                    detalle: document.getElementById('detalle-gasto').value.trim()
                 });
             } else {
                 const fechaActual = new Date().toLocaleDateString('es-AR', {
@@ -677,7 +757,6 @@
                     precio: precioArsLimpio,
                     cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim(),
-                    extra: document.getElementById('extra-gasto').value.trim(),
                     fechaStr: fechaActual,
                     timestamp: serverTimestamp() 
                 });
@@ -685,9 +764,9 @@
             resetearFormulario();
         } catch (error) {
             console.error(error);
-            alert("Error al guardar en Firebase.");
         } finally {
             btnSubmitGasto.disabled = false;
+            btnSubmitGasto.textContent = textoOriginal;
         }
     });
 </script>
