@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Gastos por Obra</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .section {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+        .bg-materiales { background-color: #e67e22; }
+        .bg-mano-obra { background-color: #9b59b6; }
+        .bg-extras { background-color: #95a5a6; }
+        #panel-gastos {
+            display: none; /* Se oculta hasta que se seleccione una obra */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gestión de Obras</h1>
+
+    <div class="grid-2">
+        <div class="section">
+            <h2>1. Crear Nueva Obra</h2>
+            <div class="form-group">
+                <label for="nombre-obra">Nombre de la Obra</label>
+                <input type="text" id="nombre-obra" placeholder="Ej: Remodelación Casa Central">
+            </div>
+            <button onclick="crearObra()">Crear Obra</button>
+        </div>
+
+        <div class="section">
+            <h2>2. Seleccionar Obra</h2>
+            <div class="form-group">
+                <label for="select-obra">Elegí una obra para gestionar</label>
+                <select id="select-obra" onchange="seleccionarObra()">
+                    <option value="">-- Seleccioná una obra --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="panel-gastos">
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+        <h2 id="titulo-obra-activa">Gastos de la Obra</h2>
+
+        <div class="grid-2">
+            <div class="section">
+                <h3>Cargar Gasto</h3>
+                <form id="form-gasto" onsubmit="guardarGasto(event)">
+                    <div class="form-group">
+                        <label for="categoria-gasto">Categoría</label>
+                        <select id="categoria-gasto" required>
+                            <option value="Materiales">Materiales</option>
+                            <option value="Mano de Obra">Mano de Obra</option>
+                            <option value="Extras">Extras</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="precio-gasto">Precio ($)</label>
+                        <input type="number" id="precio-gasto" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="detalle-gasto">Detalle</label>
+                        <input type="text" id="detalle-gasto" required placeholder="Ej: 10 bolsas de cemento">
+                    </div>
+                    <div class="form-group">
+                        <label for="extra-gasto">Información Extra (Opcional)</label>
+                        <input type="text" id="extra-gasto" placeholder="Ej: Comprado en corralón X">
+                    </div>
+                    <button type="submit" class="btn-success">Guardar Gasto</button>
+                </form>
+            </div>
+
+            <div class="section" style="overflow-x: auto;">
+                <h3>Historial de Gastos</h3>
+                <table id="tabla-gastos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Categoría</th>
+                            <th>Detalle</th>
+                            <th>Extra</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-gastos">
+                        </tbody>
+                </table>
+                <h3 style="text-align: right; margin-top: 20px;">Total: $<span id="total-gastos">0.00</span></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let obras = JSON.parse(localStorage.getItem('obrasDB')) || [];
+    let obraActivaId = null;
+
+    // Inicializar la vista
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarSelectObras();
+    });
+
+    // 1. Crear una nueva obra
+    function crearObra() {
+        const nombreInput = document.getElementById('nombre-obra');
+        const nombre = nombreInput.value.trim();
+
+        if (!nombre) {
+            alert("Por favor, ingresá un nombre para la obra.");
+            return;
+        }
+
+        const nuevaObra = {
+            id: Date.now().toString(), // Genera un ID único basado en el tiempo
+            nombre: nombre,
+            gastos: []
+        };
+
+        obras.push(nuevaObra);
+        guardarEnLocalStorage();
+        
+        nombreInput.value = ''; // Limpiar input
+        actualizarSelectObras();
+        
+        // Seleccionar automáticamente la obra recién creada
+        document.getElementById('select-obra').value = nuevaObra.id;
+        seleccionarObra();
+    }
+
+    // 2. Actualizar el desplegable de obras
+    function actualizarSelectObras() {
+        const select = document.getElementById('select-obra');
+        select.innerHTML = '<option value="">-- Seleccioná una obra --</option>';
+        
+        obras.forEach(obra => {
+            const option = document.createElement('option');
+            option.value = obra.id;
+            option.textContent = obra.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    // 3. Seleccionar una obra del desplegable
+    function seleccionarObra() {
+        const select = document.getElementById('select-obra');
+        obraActivaId = select.value;
+        const panelGastos = document.getElementById('panel-gastos');
+
+        if (obraActivaId) {
+            const obraActiva = obras.find(o => o.id === obraActivaId);
+            document.getElementById('titulo-obra-activa').textContent = `Administrando: ${obraActiva.nombre}`;
+            panelGastos.style.display = 'block';
+            renderizarGastos();
+        } else {
+            panelGastos.style.display = 'none';
+        }
+    }
+
+    // 4. Guardar un gasto en la obra activa
+    function guardarGasto(e) {
+        e.preventDefault(); // Evita que la página se recargue
+
+        if (!obraActivaId) return;
+
+        // Obtener la fecha actual automáticamente
+        const fechaActual = new Date().toLocaleDateString('es-AR', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+
+        const nuevoGasto = {
+            id: Date.now().toString(),
+            fecha: fechaActual,
+            categoria: document.getElementById('categoria-gasto').value,
+            precio: parseFloat(document.getElementById('precio-gasto').value),
+            detalle: document.getElementById('detalle-gasto').value.trim(),
+            extra: document.getElementById('extra-gasto').value.trim()
+        };
+
+        // Encontrar la obra y agregar el gasto
+        const obraIndex = obras.findIndex(o => o.id === obraActivaId);
+        obras[obraIndex].gastos.push(nuevoGasto);
+        
+        guardarEnLocalStorage();
+        renderizarGastos();
+        
+        // Limpiar el formulario
+        document.getElementById('form-gasto').reset();
+    }
+
+    // 5. Mostrar los gastos en la tabla
+    function renderizarGastos() {
+        const listaGastos = document.getElementById('lista-gastos');
+        const totalGastosSpan = document.getElementById('total-gastos');
+        listaGastos.innerHTML = '';
+        
+        const obraActiva = obras.find(o => o.id === obraActivaId);
+        let total = 0;
+
+        if (!obraActiva || obraActiva.gastos.length === 0) {
+            listaGastos.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay gastos registrados todavía.</td></tr>';
+            totalGastosSpan.textContent = '0.00';
+            return;
+        }
+
+        obraActiva.gastos.forEach(gasto => {
+            total += gasto.precio;
+            
+            // Asignar clase de color según categoría
+            let claseBadge = '';
+            if (gasto.categoria === 'Materiales') claseBadge = 'bg-materiales';
+            else if (gasto.categoria === 'Mano de Obra') claseBadge = 'bg-mano-obra';
+            else claseBadge = 'bg-extras';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${gasto.fecha}</td>
+                <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
+                <td>${gasto.detalle}</td>
+                <td>${gasto.extra || '-'}</td>
+                <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+            `;
+            listaGastos.appendChild(tr);
+        });
+
+        totalGastosSpan.textContent = total.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+    }
+
+    // Utilidad: Guardar en el almacenamiento del navegador
+    function guardarEnLocalStorage() {
+        localStorage.setItem('obrasDB', JSON.stringify(obras));
+    }
+</script>
+
+</body>
+</html>
