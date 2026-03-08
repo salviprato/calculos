@@ -54,10 +54,12 @@
         details[open] summary::after { content: '▲'; }
         .accordion-content {
             padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            border-top: 1px solid var(--border);
         }
 
         .section {
@@ -84,7 +86,7 @@
             padding: 10px 25px;
         }
 
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #555; }
         input, select {
             width: 100%;
@@ -94,6 +96,16 @@
             box-sizing: border-box;
             font-family: inherit;
         }
+        
+        .moneda-symbol {
+            position: absolute;
+            left: 10px;
+            top: 33px;
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        .input-moneda { padding-left: 25px; }
+        
         button {
             background-color: var(--primary);
             color: white;
@@ -120,6 +132,22 @@
         
         #panel-gastos { display: none; }
         .grafico-container { position: relative; height: 300px; width: 100%; }
+        
+        .cotizacion-info {
+            font-size: 0.75em;
+            color: #7f8c8d;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        .controles-tabla {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -129,7 +157,7 @@
 
     <details open>
         <summary>Gestión de Obras (Crear y Seleccionar)</summary>
-        <div class="accordion-content">
+        <div class="accordion-content grid-2">
             <div>
                 <label for="nombre-obra">Nueva Obra</label>
                 <div style="display: flex; gap: 10px;">
@@ -155,7 +183,7 @@
             <form id="form-gasto" class="form-horizontal">
                 <input type="hidden" id="id-gasto-editando" value="">
                 
-                <div class="form-group">
+                <div class="form-group" style="flex: 1.5;">
                     <label for="categoria-gasto">Categoría</label>
                     <select id="categoria-gasto" required>
                         <option value="Materiales">Materiales</option>
@@ -163,10 +191,20 @@
                         <option value="Extras">Extras</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="precio-gasto">Precio ($)</label>
-                    <input type="text" id="precio-gasto" required placeholder="0.00">
+                
+                <div class="form-group" style="flex: 1.5;">
+                    <label for="precio-gasto-ars">Precio (ARS)</label>
+                    <span class="moneda-symbol">$</span>
+                    <input type="text" id="precio-gasto-ars" class="input-moneda" required placeholder="0.00">
                 </div>
+                
+                <div class="form-group" style="flex: 1.5;">
+                    <label for="precio-gasto-usd">Precio (USD Oficial)</label>
+                    <span class="moneda-symbol">U$D</span>
+                    <input type="text" id="precio-gasto-usd" class="input-moneda" required placeholder="0.00">
+                    <small id="info-cotizacion" class="cotizacion-info">Cargando dólar...</small>
+                </div>
+
                 <div class="form-group" style="flex: 2;">
                     <label for="detalle-gasto">Detalle</label>
                     <input type="text" id="detalle-gasto" required placeholder="Ej: Cemento">
@@ -175,22 +213,39 @@
                     <label for="extra-gasto">Extra</label>
                     <input type="text" id="extra-gasto" placeholder="Opcional">
                 </div>
-                <div style="display: flex; gap: 10px;">
+                
+                <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
                     <button type="submit" id="btn-submit-gasto" class="btn-success">Cargar Gasto</button>
                     <button type="button" id="btn-cancelar-edicion" style="display: none; background: #95a5a6;">Cancelar</button>
                 </div>
             </form>
         </div>
 
-        <div class="section">
-            <h3>Evolución de Gastos en el Tiempo</h3>
-            <div class="grafico-container">
-                <canvas id="graficoGastos"></canvas>
+        <details>
+            <summary>Evolución de Gastos en el Tiempo (Ver Gráfico)</summary>
+            <div class="accordion-content">
+                <div class="grafico-container">
+                    <canvas id="graficoGastos"></canvas>
+                </div>
             </div>
-        </div>
+        </details>
 
         <div class="section" style="padding: 0; border: none; background: transparent;">
-            <h3>Historial de Gastos</h3>
+            
+            <div class="controles-tabla">
+                <h3 style="margin: 0;">Historial de Gastos</h3>
+                <div>
+                    <label for="orden-gastos" style="display: inline-block; margin-right: 10px;">Ordenar por:</label>
+                    <select id="orden-gastos" style="width: auto; display: inline-block;">
+                        <option value="fecha_desc">Fecha (Más nuevos primero)</option>
+                        <option value="fecha_asc">Fecha (Más viejos primero)</option>
+                        <option value="valor_desc">Mayor Precio</option>
+                        <option value="valor_asc">Menor Precio</option>
+                        <option value="categoria_asc">Categoría (A - Z)</option>
+                    </select>
+                </div>
+            </div>
+
             <div style="background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto;">
                 <table>
                     <thead>
@@ -199,7 +254,8 @@
                             <th>Categoría</th>
                             <th>Detalle</th>
                             <th>Extra</th>
-                            <th>Precio</th>
+                            <th>ARS ($)</th>
+                            <th>USD (U$D)</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -208,7 +264,7 @@
                 </table>
             </div>
             <h3 style="text-align: right; margin-top: 15px; font-size: 1.5em;">
-                Total: $<span id="total-gastos">0.00</span>
+                Total Obra: $<span id="total-gastos-ars">0.00</span> | U$D <span id="total-gastos-usd">0.00</span>
             </h3>
         </div>
     </div>
@@ -234,7 +290,11 @@
 
     let obraActivaId = null;
     let unsubscribeGastos = null;
-    let chartInstance = null; // Guardamos el gráfico para actualizarlo
+    let chartInstance = null; 
+    let gastosActualesEnMemoria = []; // Guardamos los gastos para ordenarlos sin llamar a Firebase de nuevo
+
+    // Variables Dólar
+    let tasaDolarOficial = 1000; // Valor por defecto por si falla la API
 
     // Referencias DOM
     const selectObra = document.getElementById('select-obra');
@@ -242,28 +302,68 @@
     const tituloObraActiva = document.getElementById('titulo-obra-activa');
     const formGasto = document.getElementById('form-gasto');
     const btnCrearObra = document.getElementById('btn-crear-obra');
-    const inputPrecio = document.getElementById('precio-gasto');
+    const inputArs = document.getElementById('precio-gasto-ars');
+    const inputUsd = document.getElementById('precio-gasto-usd');
+    const selectOrden = document.getElementById('orden-gastos');
     const btnSubmitGasto = document.getElementById('btn-submit-gasto');
     const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion');
     const inputIdEditando = document.getElementById('id-gasto-editando');
 
-    // LÓGICA: Separador de miles en tiempo real
-    inputPrecio.addEventListener('input', function(e) {
-        // Permitimos solo números y la coma
-        let valor = this.value.replace(/[^\d,]/g, '');
-        let partes = valor.split(',');
-        
-        // Formateamos la parte entera con puntos cada 3 cifras
-        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        
-        // Si hay decimales, limitamos a 2
-        if (partes.length > 1) {
-            partes[1] = partes[1].substring(0, 2);
-            this.value = partes[0] + ',' + partes[1];
-        } else {
-            this.value = partes[0];
+    // === INICIO: LÓGICA DE DÓLAR Y FORMATEO === //
+    async function obtenerCotizacionDolar() {
+        try {
+            const respuesta = await fetch('https://dolarapi.com/v1/dolares/oficial');
+            const data = await respuesta.json();
+            tasaDolarOficial = data.venta;
+            document.getElementById('info-cotizacion').textContent = `Cotización: $${tasaDolarOficial}`;
+        } catch (error) {
+            console.error("Error cargando dólar", error);
+            document.getElementById('info-cotizacion').textContent = `Cotización manual: $${tasaDolarOficial}`;
         }
+    }
+    obtenerCotizacionDolar();
+
+    function limpiarNumero(stringNum) {
+        if(!stringNum) return 0;
+        return parseFloat(stringNum.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    function formatearConPuntos(num) {
+        let partes = num.toFixed(2).replace('.', ',').split(',');
+        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return partes.join(',');
+    }
+
+    // Evento al escribir Pesos
+    inputArs.addEventListener('input', function() {
+        // Formateo visual del input actual
+        let val = this.value.replace(/[^\d,]/g, '');
+        let partes = val.split(',');
+        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } 
+        else { this.value = partes[0]; }
+
+        // Calculo automático de USD
+        let ars = limpiarNumero(this.value);
+        let usd = ars / tasaDolarOficial;
+        inputUsd.value = formatearConPuntos(usd);
     });
+
+    // Evento al escribir Dólares
+    inputUsd.addEventListener('input', function() {
+        // Formateo visual del input actual
+        let val = this.value.replace(/[^\d,]/g, '');
+        let partes = val.split(',');
+        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        if (partes.length > 1) { this.value = partes[0] + ',' + partes[1].substring(0, 2); } 
+        else { this.value = partes[0]; }
+
+        // Calculo automático de ARS
+        let usd = limpiarNumero(this.value);
+        let ars = usd * tasaDolarOficial;
+        inputArs.value = formatearConPuntos(ars);
+    });
+    // === FIN LÓGICA DÓLAR === //
 
     // 1. Escuchar Obras
     const qObras = query(collection(db, "obras"), orderBy("fechaCreacion", "desc"));
@@ -303,93 +403,116 @@
         if (obraActivaId) {
             tituloObraActiva.textContent = e.target.options[e.target.selectedIndex].text;
             panelGastos.style.display = 'block';
-            resetearFormulario(); // Limpia si había algo editándose de otra obra
+            resetearFormulario();
             escucharGastos(obraActivaId);
         } else {
             panelGastos.style.display = 'none';
         }
     });
 
-    // 4. Escuchar Gastos, Mostrar Tabla y Renderizar Gráfico
+    // 4. Escuchar Gastos de Firebase (Solo lectura, se guarda en memoria)
     function escucharGastos(obraId) {
-        const qGastos = query(collection(db, "gastos"), where("obraId", "==", obraId), orderBy("timestamp", "asc"));
-
+        const qGastos = query(collection(db, "gastos"), where("obraId", "==", obraId));
         unsubscribeGastos = onSnapshot(qGastos, (snapshot) => {
-            const listaGastos = document.getElementById('lista-gastos');
-            const totalGastosSpan = document.getElementById('total-gastos');
-            listaGastos.innerHTML = '';
-            let total = 0;
-            
-            // Datos para el gráfico
-            const gastosPorFecha = {};
-
-            // Invertimos el array visualmente para que la tabla muestre lo más nuevo arriba
-            const docsInvertidos = [...snapshot.docs].reverse();
-
-            if (docsInvertidos.length === 0) {
-                listaGastos.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay gastos.</td></tr>';
-                totalGastosSpan.textContent = '0.00';
-                actualizarGrafico({}); // Limpia el gráfico
-                return;
-            }
-
-            // Procesar para la TABLA (orden descendente)
-            docsInvertidos.forEach((docSnap) => {
-                const gasto = docSnap.data();
-                const id = docSnap.id;
-                total += gasto.precio;
-                
-                let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
-                                 gasto.categoria === 'Mano de Obra' ? 'bg-mano-obra' : 'bg-extras';
-
-                // Escapamos strings para evitar errores al pasarlos a la función del botón
-                const detSeguro = gasto.detalle.replace(/'/g, "\\'");
-                const extSeguro = (gasto.extra || '').replace(/'/g, "\\'");
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${gasto.fechaStr}</td>
-                    <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
-                    <td>${gasto.detalle}</td>
-                    <td>${gasto.extra || '-'}</td>
-                    <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-                    <td>
-                        <button type="button" class="btn-warning" onclick="window.prepararEdicion('${id}', '${gasto.categoria}', ${gasto.precio}, '${detSeguro}', '${extSeguro}')">Editar</button>
-                    </td>
-                `;
-                listaGastos.appendChild(tr);
-            });
-
-            // Procesar para el GRÁFICO (orden ascendente, como viene por defecto de Firebase)
-            snapshot.docs.forEach((docSnap) => {
-                const gasto = docSnap.data();
-                if (!gastosPorFecha[gasto.fechaStr]) {
-                    gastosPorFecha[gasto.fechaStr] = 0;
-                }
-                gastosPorFecha[gasto.fechaStr] += gasto.precio;
-            });
-
-            totalGastosSpan.textContent = total.toLocaleString('es-AR', { minimumFractionDigits: 2 });
-            actualizarGrafico(gastosPorFecha);
+            gastosActualesEnMemoria = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                // Extraemos el tiempo real para ordenar. Si acaba de crearse, usamos Date.now()
+                tiempoReal: doc.data().timestamp ? doc.data().timestamp.toMillis() : Date.now() 
+            }));
+            renderizarTablaYGrafico();
         });
     }
 
-    // LÓGICA DEL GRÁFICO
-    function actualizarGrafico(datosFechas) {
-        const ctx = document.getElementById('graficoGastos').getContext('2d');
-        const fechas = Object.keys(datosFechas);
-        const valores = Object.values(datosFechas);
+    // 5. Ordenar, Renderizar Tabla y Gráfico
+    selectOrden.addEventListener('change', renderizarTablaYGrafico);
 
-        if (chartInstance) {
-            chartInstance.destroy(); // Destruir el gráfico anterior para redibujar
+    function renderizarTablaYGrafico() {
+        const listaGastos = document.getElementById('lista-gastos');
+        const spanTotalArs = document.getElementById('total-gastos-ars');
+        const spanTotalUsd = document.getElementById('total-gastos-usd');
+        
+        let totalArs = 0;
+        let totalUsd = 0;
+        listaGastos.innerHTML = '';
+        const gastosPorFecha = {}; // Para el gráfico
+
+        // Copiamos y ORDENAMOS el array de memoria según el select
+        const orden = selectOrden.value;
+        let gastosOrdenados = [...gastosActualesEnMemoria].sort((a, b) => {
+            if (orden === 'fecha_desc') return b.tiempoReal - a.tiempoReal;
+            if (orden === 'fecha_asc') return a.tiempoReal - b.tiempoReal;
+            if (orden === 'valor_desc') return b.precio - a.precio;
+            if (orden === 'valor_asc') return a.precio - b.precio;
+            if (orden === 'categoria_asc') return a.categoria.localeCompare(b.categoria);
+            return 0;
+        });
+
+        if (gastosOrdenados.length === 0) {
+            listaGastos.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay gastos.</td></tr>';
+            spanTotalArs.textContent = '0.00';
+            spanTotalUsd.textContent = '0.00';
+            actualizarGrafico({});
+            return;
         }
+
+        // Construir HTML de la Tabla
+        gastosOrdenados.forEach((gasto) => {
+            totalArs += gasto.precio;
+            let usdGasto = gasto.precio / gasto.cotizacionDolarGuardada; // Usamos el dolar del momento de la compra
+            totalUsd += usdGasto;
+            
+            let claseBadge = gasto.categoria === 'Materiales' ? 'bg-materiales' : 
+                             gasto.categoria === 'Mano de Obra' ? 'bg-mano-obra' : 'bg-extras';
+
+            const detSeguro = gasto.detalle.replace(/'/g, "\\'");
+            const extSeguro = (gasto.extra || '').replace(/'/g, "\\'");
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${gasto.fechaStr}</td>
+                <td><span class="badge ${claseBadge}">${gasto.categoria}</span></td>
+                <td>${gasto.detalle}</td>
+                <td>${gasto.extra || '-'}</td>
+                <td>$${gasto.precio.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                <td style="color: #27ae60; font-weight: bold;">U$D ${usdGasto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                <td>
+                    <button type="button" class="btn-warning" onclick="window.prepararEdicion('${gasto.id}', '${gasto.categoria}', ${gasto.precio}, ${usdGasto}, '${detSeguro}', '${extSeguro}')">Editar</button>
+                </td>
+            `;
+            listaGastos.appendChild(tr);
+
+            // Preparar datos para el gráfico (Cronológico siempre)
+            if (!gastosPorFecha[gasto.fechaStr]) gastosPorFecha[gasto.fechaStr] = 0;
+            gastosPorFecha[gasto.fechaStr] += gasto.precio;
+        });
+
+        spanTotalArs.textContent = totalArs.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+        spanTotalUsd.textContent = totalUsd.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+        
+        actualizarGrafico(gastosPorFecha);
+    }
+
+    // LÓGICA DEL GRÁFICO (Siempre lo ordena por fecha cronológica)
+    function actualizarGrafico(datosFechas) {
+        // Ordenamos las fechas de menor a mayor (cronológicamente) para que el gráfico tenga sentido
+        const fechasOrdenadas = Object.keys(datosFechas).sort((a, b) => {
+            const dateA = new Date(a.split('/').reverse().join('-')); // Convierte DD/MM/YYYY a YYYY-MM-DD
+            const dateB = new Date(b.split('/').reverse().join('-'));
+            return dateA - dateB;
+        });
+        
+        const valores = fechasOrdenadas.map(f => datosFechas[f]);
+
+        const ctx = document.getElementById('graficoGastos').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
 
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: fechas,
+                labels: fechasOrdenadas,
                 datasets: [{
-                    label: 'Gasto Total por Día ($)',
+                    label: 'Gasto Total por Día (ARS $)',
                     data: valores,
                     borderColor: '#3498db',
                     backgroundColor: 'rgba(52, 152, 219, 0.1)',
@@ -397,38 +520,27 @@
                     pointBackgroundColor: '#2c3e50',
                     pointRadius: 4,
                     fill: true,
-                    tension: 0.3 // Curva suavizada
+                    tension: 0.3
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     }
 
-    // 5. Preparar Edición (Vinculado al botón de la tabla)
-    window.prepararEdicion = function(id, categoria, precioNum, detalle, extra) {
+    // 6. Preparar Edición
+    window.prepararEdicion = function(id, categoria, precioArs, precioUsd, detalle, extra) {
         inputIdEditando.value = id;
         document.getElementById('categoria-gasto').value = categoria;
         
-        // Transformar el número de vuelta a formato con puntos y comas para el input
-        let precioStr = precioNum.toFixed(2).replace('.', ',');
-        precioStr = precioStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        inputPrecio.value = precioStr;
+        inputArs.value = formatearConPuntos(precioArs);
+        inputUsd.value = formatearConPuntos(precioUsd);
         
         document.getElementById('detalle-gasto').value = detalle;
         document.getElementById('extra-gasto').value = extra;
 
-        // Cambiar el estilo del formulario para indicar que estamos editando
         btnSubmitGasto.textContent = 'Actualizar Gasto';
-        btnSubmitGasto.style.backgroundColor = '#f39c12'; // Naranja
+        btnSubmitGasto.style.backgroundColor = '#f39c12';
         btnCancelarEdicion.style.display = 'inline-block';
-        
-        // Scrollear hacia arriba para que el usuario vea el formulario
         document.getElementById('form-gasto').scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -436,13 +548,13 @@
         formGasto.reset();
         inputIdEditando.value = '';
         btnSubmitGasto.textContent = 'Cargar Gasto';
-        btnSubmitGasto.style.backgroundColor = '#2ecc71'; // Vuelve a Verde
+        btnSubmitGasto.style.backgroundColor = '#2ecc71';
         btnCancelarEdicion.style.display = 'none';
     }
 
     btnCancelarEdicion.addEventListener('click', resetearFormulario);
 
-    // 6. Cargar o Actualizar Gasto
+    // 7. Cargar o Actualizar Gasto
     formGasto.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!obraActivaId) return;
@@ -450,32 +562,35 @@
         btnSubmitGasto.disabled = true;
         btnSubmitGasto.textContent = 'Guardando...';
 
-        // Desarmar el string (ej: 1.500,50 -> 1500.50) para guardarlo como número real en Firebase
-        let precioString = inputPrecio.value;
-        let precioLimpio = precioString.replace(/\./g, '').replace(',', '.');
-        let precioFinal = parseFloat(precioLimpio);
+        let precioArsLimpio = limpiarNumero(inputArs.value);
+        let precioUsdLimpio = limpiarNumero(inputUsd.value);
+        
+        // Derivamos la cotización de este momento exacto de la compra (Para que el historial no mute con los días)
+        let cotizacionGuardada = precioArsLimpio / precioUsdLimpio; 
 
         const idEditando = inputIdEditando.value;
 
         try {
             if (idEditando) {
-                // MODO EDICIÓN
+                // Actualizar
                 const gastoRef = doc(db, "gastos", idEditando);
                 await updateDoc(gastoRef, {
                     categoria: document.getElementById('categoria-gasto').value,
-                    precio: precioFinal,
+                    precio: precioArsLimpio,
+                    cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim(),
                     extra: document.getElementById('extra-gasto').value.trim()
                 });
             } else {
-                // MODO CREACIÓN
+                // Crear
                 const fechaActual = new Date().toLocaleDateString('es-AR', {
                     day: '2-digit', month: '2-digit', year: 'numeric'
                 });
                 await addDoc(collection(db, "gastos"), {
                     obraId: obraActivaId,
                     categoria: document.getElementById('categoria-gasto').value,
-                    precio: precioFinal,
+                    precio: precioArsLimpio,
+                    cotizacionDolarGuardada: cotizacionGuardada,
                     detalle: document.getElementById('detalle-gasto').value.trim(),
                     extra: document.getElementById('extra-gasto').value.trim(),
                     fechaStr: fechaActual,
